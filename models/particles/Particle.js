@@ -1,6 +1,8 @@
-import Canvas from "./Canvas.js";
+import Canvas from "../Canvas.js";
 
 class Particle {
+  MAX_TIME_ON_SCREEN = 1000
+
   constructor(start_pos, end_pos, speed, img = null, size = 5) {
     let image = null;
 
@@ -17,6 +19,8 @@ class Particle {
     this.speed = speed;
     this.size = size
     this.visible = true;
+
+    setTimeout(() => this.visible = false, this.MAX_TIME_ON_SCREEN)
   }
 
   draw() {

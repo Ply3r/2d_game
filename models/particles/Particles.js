@@ -1,4 +1,3 @@
-import Canvas from "./Canvas.js";
 import Particle from "./Particle.js";
 
 let particles_array = [];

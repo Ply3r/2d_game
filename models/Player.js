@@ -2,10 +2,11 @@ import Canvas from "./Canvas.js";
 import Gun from "./Gun.js"
 
 class Player {
-  SPRITE_WIDTH = 16
-  SPRITE_HEIGHT = 20
-  PLAYER_SIZE = 80
-  MOVE_SPEED = 25
+  SPRITE_WIDTH = 16;
+  SPRITE_HEIGHT = 20;
+  PLAYER_SIZE = 80;
+  MOVE_SPEED = 8;
+  PLAYER_TOTAL_LIFE = 3;
 
   constructor() {
     this.setup();
@@ -17,6 +18,8 @@ class Player {
     this.inventory = [new Gun()];
     this.direction = 'bottom';
     this.current_sprite = 0;
+    this.life = this.PLAYER_TOTAL_LIFE;
+    this.holding_keys = { a: false, w: false, s: false, d: false }
 
     this.add_event_handlers();
   }
@@ -31,15 +34,29 @@ class Player {
     drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
     drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, 0, 0, this.PLAYER_SIZE, this.PLAYER_SIZE)
 
-
     // Crosshair
     const crosshair_img = new Image();
     crosshair_img.src = './assets/crosshair.png';
     drawer.setTransform(1, 0, 0, 1, this.mouse_position.x, this.mouse_position.y);
     drawer.drawImage(crosshair_img, 0, 0, 25, 25);
 
+    // Gun
     const gun = this.inventory[0];
     gun.draw(this.position, this.mouse_position);
+
+    this.update();
+  }
+
+  update() {
+    if(this.holding_keys.a) this.position.x -= this.MOVE_SPEED;
+    if(this.holding_keys.w) this.position.y -= this.MOVE_SPEED;
+    if(this.holding_keys.s) this.position.y += this.MOVE_SPEED;
+    if(this.holding_keys.d) this.position.x += this.MOVE_SPEED;
+
+    if (Object.values(this.holding_keys).some((value) => value)) {
+      this.current_sprite += 1;
+      if (this.current_sprite >= 3) this.current_sprite = 0;
+    }
   }
 
   getImagePosition() {
@@ -72,30 +89,48 @@ class Player {
     this.direction = direction;
   }
 
-  movePlayer(event) {
+  moveKeyPress(event) {
     switch(event.key) {
       case 'a':
-        this.position.x -= this.MOVE_SPEED;
+        this.holding_keys.a = true;
         this.changeDirection('left')
         break;
       case 'w':
-        this.position.y -= this.MOVE_SPEED;
+        this.holding_keys.w = true;
         this.changeDirection('top');
         break;
       case 's':
-        this.position.y += this.MOVE_SPEED;
+        this.holding_keys.s = true;
         this.changeDirection('bottom');
         break;
       case 'd':
-        this.position.x += this.MOVE_SPEED;
+        this.holding_keys.d = true;
         this.changeDirection('right');
         break;
       default:
         return;
     }
 
-    this.current_sprite += 1;
-    if (this.current_sprite >= 3) this.current_sprite = 0;
+    
+  }
+
+  moveKeyRelease(event) {
+    switch(event.key) {
+      case 'a':
+        this.holding_keys.a = false;
+        break;
+      case 'w':
+        this.holding_keys.w = false;
+        break;
+      case 's':
+        this.holding_keys.s = false;
+        break;
+      case 'd':
+        this.holding_keys.d = false;
+        break;
+      default:
+        return;
+    }
   }
 
   moveMouse(event) {
@@ -108,9 +143,18 @@ class Player {
   }
 
   add_event_handlers() {
-    Canvas.addListener('keydown', (event) => this.movePlayer(event))
+    Canvas.addListener('keydown', (event) => this.moveKeyPress(event))
+    Canvas.addListener('keyup', (event) => this.moveKeyRelease(event))
     Canvas.addListener('mousemove', (event) => this.moveMouse(event))
     Canvas.addListener('click', () => this.shoot())
+  }
+
+  attributes() {
+    return {
+      curr_gun: this.inventory[0],
+      life: this.life,
+      position: this.position,
+    }
   }
 }
 
