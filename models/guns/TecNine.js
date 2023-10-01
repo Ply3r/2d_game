@@ -2,7 +2,12 @@ import Gun from "./Gun.js";
 
 class TecNine extends Gun {
   constructor() {
-    super(20, 40, '../../assets/guns/tec_9.png', { x: 60, y: 40 })
+    super({ 
+      magazine_size: 20, 
+      total_ammunition: 40, 
+      image: '../../assets/guns/tec_9.png', 
+      gun_size: { x: 60, y: 40 }
+    })
   }
 }
 

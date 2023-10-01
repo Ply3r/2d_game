@@ -2,13 +2,16 @@ import Canvas from "../Canvas.js";
 import Particles from "../particles/Particles.js";
 
 class Gun {
-  constructor(magazine_size, total_ammunition, image, gun_size) {
+  constructor({ magazine_size, total_ammunition, image, gun_size, automatic, bullet_time }) {
     this.magazine_size = magazine_size
     this.using_ammunition = magazine_size
     this.total_ammunition = total_ammunition
+    this.can_shoot = true;
     this.reloading = false;
     this.image = image;
     this.gun_size = gun_size;
+    this.automatic = automatic;
+    this.bullet_time = bullet_time;
   }
 
   draw(player_pos, crosshair_pos) {
@@ -33,11 +36,9 @@ class Gun {
   }
 
   fire(player_pos, mouse_position) {
-    if (this.reloading) return;
+    if (this.reloading || !this.can_shoot) return;
 
-    if (this.using_ammunition > 0) {
-      this.using_ammunition -= 1;
-    } else {
+    if (this.using_ammunition <= 0) {
       this.reloading = true;
 
       const new_using_ammunition = this.total_ammunition >= this.magazine_size ? this.magazine_size : this.total_ammunition;
@@ -48,6 +49,13 @@ class Gun {
       return;
     }
 
+    if (this.automatic) {
+      this.can_shoot = false;
+
+      setTimeout(() => this.can_shoot = true, this.bullet_time);
+    }
+
+    this.using_ammunition -= 1;
     const position = { x: player_pos.x + 40, y: player_pos.y + 50 };
     Particles.create(position, mouse_position, 50, null, 10);
   }
@@ -56,6 +64,7 @@ class Gun {
     return {
       total_ammunition: this.total_ammunition,
       using_ammunition: this.using_ammunition,
+      automatic: this.automatic,
       reloading: this.reloading,
       image: this.image
     }
