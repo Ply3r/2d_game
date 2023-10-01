@@ -1,5 +1,6 @@
 import Canvas from "./Canvas.js";
 import GameEvents from "./GameEvents.js";
+import Controls from "./Controls.js";
 
 class Player {
   SPRITE_WIDTH = 16;
@@ -14,17 +15,15 @@ class Player {
 
   setup() {
     this.position = { x: Math.floor(window.innerWidth / 2), y: Math.floor(window.innerHeight / 2) };
-    this.mouse_position = { x: 0, y: 0 };
     this.inventory = [GameEvents.randomGun()];
-    this.direction = 'bottom';
     this.current_sprite = 0;
     this.life = this.PLAYER_TOTAL_LIFE;
-    this.holding_keys = { a: false, w: false, s: false, d: false }
 
-    this.add_event_handlers();
+    Canvas.addListener('click', () => this.shoot());
   }
 
   draw() {
+    this.update();
     const drawer = Canvas.drawer();
 
     // Personagem
@@ -35,118 +34,77 @@ class Player {
     drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, 0, 0, this.PLAYER_SIZE, this.PLAYER_SIZE)
 
     // Crosshair
+    const mouse_position = Controls.getMousePosition();
     const crosshair_img = new Image();
     crosshair_img.src = './assets/crosshair.png';
-    drawer.setTransform(1, 0, 0, 1, this.mouse_position.x, this.mouse_position.y);
+    drawer.setTransform(1, 0, 0, 1, mouse_position.x, mouse_position.y);
     drawer.drawImage(crosshair_img, 0, 0, 25, 25);
 
     // Gun
     const gun = this.inventory[0];
-    gun.draw(this.position, this.mouse_position);
-
-    this.update();
+    gun.draw(this.position, mouse_position);
   }
 
   update() {
-    if(this.holding_keys.a) this.position.x -= this.MOVE_SPEED;
-    if(this.holding_keys.w) this.position.y -= this.MOVE_SPEED;
-    if(this.holding_keys.s) this.position.y += this.MOVE_SPEED;
-    if(this.holding_keys.d) this.position.x += this.MOVE_SPEED;
+    this.move();
+    this.automaticShoot();
+  }
 
-    if (Object.values(this.holding_keys).some((value) => value)) {
+  move() {
+    const holding_keys = Controls.getHoldingKeys();
+
+    if(holding_keys.includes('a')) this.position.x -= this.MOVE_SPEED;
+    if(holding_keys.includes('w')) this.position.y -= this.MOVE_SPEED;
+    if(holding_keys.includes('s')) this.position.y += this.MOVE_SPEED;
+    if(holding_keys.includes('d')) this.position.x += this.MOVE_SPEED;
+
+    const move_keys = ['a', 'w', 's', 'd'];
+    if (holding_keys.some((key) => move_keys.includes(key))) {
       this.current_sprite += 1;
       if (this.current_sprite >= 3) this.current_sprite = 0;
     }
+  }
+  
+  automaticShoot() {
+    const gun_attributes = this.inventory[0].attributes();
+
+    if (gun_attributes.automatic) {
+      const holding_click = Controls.getHoldingClick();
+      if (!holding_click) return;
+
+      this.shoot();
+    }
+  }
+
+  shoot() {
+    this.inventory[0].fire(this.position, Controls.getMousePosition());
+  }
+
+  getLastDirection() {
+    const holding_keys = Controls.getHoldingKeys();
+    return holding_keys[holding_keys.length - 1];
   }
 
   getImagePosition() {
     let yOffSet = null;
 
-    switch(this.direction) {
-      case 'top':
+    switch(this.getLastDirection()) {
+      case 'w':
         yOffSet = 3
         break;
-      case 'left':
+      case 'a':
         yOffSet = 1
         break;
-      case 'right':
+      case 'd':
         yOffSet = 2
         break;
-      case 'bottom':
+      case 's':
         yOffSet = 0
         break;
     }
 
     const getPos = (offset, width) => offset * width;
     return { x: getPos(this.current_sprite, this.SPRITE_WIDTH), y: getPos(yOffSet, this.SPRITE_HEIGHT) }
-  }
-
-  changeDirection(direction) {
-    if (this.direction !== direction) {
-      this.current_sprite = 0;
-    }
-
-    this.direction = direction;
-  }
-
-  moveKeyPress(event) {
-    switch(event.key) {
-      case 'a':
-        this.holding_keys.a = true;
-        this.changeDirection('left')
-        break;
-      case 'w':
-        this.holding_keys.w = true;
-        this.changeDirection('top');
-        break;
-      case 's':
-        this.holding_keys.s = true;
-        this.changeDirection('bottom');
-        break;
-      case 'd':
-        this.holding_keys.d = true;
-        this.changeDirection('right');
-        break;
-      default:
-        return;
-    }
-
-    
-  }
-
-  moveKeyRelease(event) {
-    switch(event.key) {
-      case 'a':
-        this.holding_keys.a = false;
-        break;
-      case 'w':
-        this.holding_keys.w = false;
-        break;
-      case 's':
-        this.holding_keys.s = false;
-        break;
-      case 'd':
-        this.holding_keys.d = false;
-        break;
-      default:
-        return;
-    }
-  }
-
-  moveMouse(event) {
-    this.mouse_position.x = event.clientX
-    this.mouse_position.y = event.clientY
-  }
-
-  shoot() {
-    this.inventory[0].fire(this.position, this.mouse_position);
-  }
-
-  add_event_handlers() {
-    Canvas.addListener('keydown', (event) => this.moveKeyPress(event))
-    Canvas.addListener('keyup', (event) => this.moveKeyRelease(event))
-    Canvas.addListener('mousemove', (event) => this.moveMouse(event))
-    Canvas.addListener('click', () => this.shoot())
   }
 
   attributes() {
