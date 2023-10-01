@@ -1,5 +1,5 @@
 import Canvas from "./Canvas.js";
-import Gun from "./Gun.js"
+import GameEvents from "./GameEvents.js";
 
 class Player {
   SPRITE_WIDTH = 16;
@@ -15,7 +15,7 @@ class Player {
   setup() {
     this.position = { x: Math.floor(window.innerWidth / 2), y: Math.floor(window.innerHeight / 2) };
     this.mouse_position = { x: 0, y: 0 };
-    this.inventory = [new Gun()];
+    this.inventory = [GameEvents.randomGun()];
     this.direction = 'bottom';
     this.current_sprite = 0;
     this.life = this.PLAYER_TOTAL_LIFE;

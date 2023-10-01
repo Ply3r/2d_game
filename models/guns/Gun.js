@@ -1,14 +1,14 @@
-import Canvas from "./Canvas.js";
-import Particles from "./particles/Particles.js";
+import Canvas from "../Canvas.js";
+import Particles from "../particles/Particles.js";
 
 class Gun {
-  MAGAZINE_SIZE = 30
-
-  constructor(image = '../assets/guns/tommy_gun.png') {
-    this.total_ammunition = 90
-    this.using_ammunition = 30
+  constructor(magazine_size, total_ammunition, image, gun_size) {
+    this.magazine_size = magazine_size
+    this.using_ammunition = magazine_size
+    this.total_ammunition = total_ammunition
     this.reloading = false;
     this.image = image;
+    this.gun_size = gun_size;
   }
 
   draw(player_pos, crosshair_pos) {
@@ -21,10 +21,15 @@ class Gun {
     const angle = Math.atan2(crosshair_pos.y - player_pos.y, crosshair_pos.x - player_pos.x);
     drawer.rotate(angle)
 
-    drawer.drawImage(gun_img, 0, -50, 100, 80);
+    const half = this.gun_size.y / 2
+    drawer.drawImage(gun_img, 0, -half, this.gun_size.x, this.gun_size.y);
   }
 
   getAmmunition(amount) {
+    const remaining = amount - this.using_ammunition;
+    this.using_ammunition = amount >= this.magazine_size ? this.magazine_size : this.using_ammunition + amount;
+
+    if (remaining > 0) this.total_ammunition += remaining;
   }
 
   fire(player_pos, mouse_position) {
@@ -35,7 +40,7 @@ class Gun {
     } else {
       this.reloading = true;
 
-      const new_using_ammunition = this.total_ammunition >= this.MAGAZINE_SIZE ? this.MAGAZINE_SIZE : this.total_ammunition;
+      const new_using_ammunition = this.total_ammunition >= this.magazine_size ? this.magazine_size : this.total_ammunition;
       this.total_ammunition -= new_using_ammunition;
       this.using_ammunition += new_using_ammunition;
 
@@ -43,7 +48,7 @@ class Gun {
       return;
     }
 
-    const position = { x: player_pos.x + 40, y: player_pos.y + 70 };
+    const position = { x: player_pos.x + 40, y: player_pos.y + 50 };
     Particles.create(position, mouse_position, 50, null, 10);
   }
 
