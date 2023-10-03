@@ -8,6 +8,7 @@ class Player {
   PLAYER_SIZE = 80;
   MOVE_SPEED = 8;
   PLAYER_TOTAL_LIFE = 3;
+  INVENCIBLE_TIME_AFTER_HIT = 500;
 
   constructor() {
     this.setup();
@@ -18,6 +19,7 @@ class Player {
     this.inventory = [GameEvents.randomGun()];
     this.current_sprite = 0;
     this.life = this.PLAYER_TOTAL_LIFE;
+    this.invencible = false;
 
     Canvas.addListener('click', () => this.shoot());
   }
@@ -31,18 +33,11 @@ class Player {
     const img_pos = this.getImagePosition();
     player_img.src = './assets/player.png';
     drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
-    drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, 0, 0, this.PLAYER_SIZE, this.PLAYER_SIZE)
-
-    // Crosshair
-    const mouse_position = Controls.getMousePosition();
-    const crosshair_img = new Image();
-    crosshair_img.src = './assets/crosshair.png';
-    drawer.setTransform(1, 0, 0, 1, mouse_position.x, mouse_position.y);
-    drawer.drawImage(crosshair_img, 0, 0, 25, 25);
+    drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, -40, 0, this.PLAYER_SIZE, this.PLAYER_SIZE)
 
     // Gun
     const gun = this.inventory[0];
-    gun.draw(this.position, mouse_position);
+    gun.draw(this.position, Controls.getMousePosition());
   }
 
   update() {
@@ -80,6 +75,19 @@ class Player {
     this.inventory[0].fire(this.position, Controls.getMousePosition());
   }
 
+  getHit() {
+    if (this.life <= 0) {
+      location.reload();
+    }
+
+    this.life -= 1;
+    this.invencible = true;
+
+    setTimeout(() => {
+      this.invencible = false;
+    }, this.INVENCIBLE_TIME_AFTER_HIT)
+  }
+
   getLastDirection() {
     const holding_keys = Controls.getHoldingKeys();
     return holding_keys[holding_keys.length - 1];
@@ -112,6 +120,8 @@ class Player {
       curr_gun: this.inventory[0],
       life: this.life,
       position: this.position,
+      size: this.PLAYER_SIZE,
+      invencible: this.invencible,
     }
   }
 }

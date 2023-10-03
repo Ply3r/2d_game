@@ -1,20 +1,20 @@
-import Particle from "./Particle.js";
-
-let particles_array = [];
-
 class Particles {
-  static create(start_pos, end_pos, speed, img = null, size = null) {
-    particles_array.push(new Particle(start_pos, end_pos, speed, img, size));
+  constructor() {
+    this.particles_array = [];
+  }
+
+  create(particle) {
+    this.particles_array.push(particle);
   }
 
   draw() {
-    particles_array.forEach((particle) => particle.draw());
+    this.particles_array.forEach((particle) => particle.draw());
     this.update();
   }
 
   update() {
-    particles_array = particles_array.map((particle) => particle.update());
-    particles_array = particles_array.filter((particle) => particle.isVisible());
+    this.particles_array = this.particles_array.map((particle) => particle.update());
+    this.particles_array = this.particles_array.filter((particle) => particle.isVisible());
   }
 }
 
