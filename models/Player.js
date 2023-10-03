@@ -1,6 +1,7 @@
 import Canvas from "./Canvas.js";
-import GameEvents from "./GameEvents.js";
 import Controls from "./Controls.js";
+import Main from "./Main.js";
+import GameEvents from "./GameEvents.js";
 
 class Player {
   SPRITE_WIDTH = 16;
@@ -20,6 +21,7 @@ class Player {
     this.current_sprite = 0;
     this.life = this.PLAYER_TOTAL_LIFE;
     this.invencible = false;
+    this.enemies_killed = 0;
 
     Canvas.addListener('click', () => this.shoot());
   }
@@ -47,19 +49,33 @@ class Player {
 
   move() {
     const holding_keys = Controls.getHoldingKeys();
+    let move_speed = this.MOVE_SPEED;
 
-    if(holding_keys.includes('a')) this.position.x -= this.MOVE_SPEED;
-    if(holding_keys.includes('w')) this.position.y -= this.MOVE_SPEED;
-    if(holding_keys.includes('s')) this.position.y += this.MOVE_SPEED;
-    if(holding_keys.includes('d')) this.position.x += this.MOVE_SPEED;
+    if (this.checkCollisionWithEnemies()) move_speed = move_speed / 4;    
+    this.updatePosition(holding_keys, move_speed);
+    this.updateSprite(holding_keys);
+  }
 
+  checkCollisionWithEnemies() {
+    const enemies = Main.instance().getEnemiesInstance().getEnemies();
+    return enemies.some(enemy => GameEvents.checkCollision(this, enemy))
+  }
+
+  updatePosition(holding_keys, move_speed) {
+    if(holding_keys.includes('a') && this.position.x > 40) this.position.x -= move_speed;
+    if(holding_keys.includes('w') && this.position.y > 0) this.position.y -= move_speed;
+    if(holding_keys.includes('s') && this.position.y < window.innerHeight - this.PLAYER_SIZE) this.position.y += move_speed;
+    if(holding_keys.includes('d') && this.position.x < window.innerWidth - 40) this.position.x += move_speed;
+  }
+
+  updateSprite(holding_keys) {
     const move_keys = ['a', 'w', 's', 'd'];
     if (holding_keys.some((key) => move_keys.includes(key))) {
       this.current_sprite += 1;
       if (this.current_sprite >= 3) this.current_sprite = 0;
     }
   }
-  
+
   automaticShoot() {
     const gun_attributes = this.inventory[0].attributes();
 
@@ -115,6 +131,10 @@ class Player {
     return { x: getPos(this.current_sprite, this.SPRITE_WIDTH), y: getPos(yOffSet, this.SPRITE_HEIGHT) }
   }
 
+  increaseEnemiesKilled() {
+    this.enemies_killed += 1;
+  }
+
   attributes() {
     return {
       curr_gun: this.inventory[0],
@@ -122,6 +142,7 @@ class Player {
       position: this.position,
       size: this.PLAYER_SIZE,
       invencible: this.invencible,
+      enemies_killed: this.enemies_killed
     }
   }
 }

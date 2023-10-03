@@ -2,7 +2,7 @@ import TommyGun from "./guns/TommyGun.js";
 import TecNine from "./guns/TecNine.js";
 import Main from "./Main.js";
 
-const ENEMY_SPAWN_RATE = 5000;
+const ENEMY_SPAWN_RATE = 1000;
 
 class GameEvents {
   static randomGun() {
@@ -24,6 +24,10 @@ class GameEvents {
 
     return (f_pos.x <= s_pos.x + s_size.x && f_pos.x >= s_pos.x - s_size.x) && 
            (f_pos.y <= s_pos.y + s_size.y && f_pos.y >= s_pos.y - s_size.y)
+  }
+
+  static dropLoot(position) {
+
   }
 
   static getNextPointInLine(first_point, second_point, speed) {

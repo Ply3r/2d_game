@@ -44,13 +44,17 @@ class Enemy {
     this.move();
     if (this.invencible) this.takingHit();
     this.checkCollisionWithPlayer();
+    this.checkIsDead();
 
     return this;
   }
 
   move() {
-    const { position: player_pos } = Main.instance().getPlayerInstance().attributes();
+    const player = Main.instance().getPlayerInstance()
+    const { position: player_pos } = player.attributes();
 
+    if (GameEvents.checkCollision(player, this)) return;
+      
     this.direction = this.position.x >= player_pos.x ? -1 : 1;
     const { x, y } = GameEvents.getNextPointInLine(this.position, player_pos, this.speed);
     this.position.x = x;
@@ -73,6 +77,14 @@ class Enemy {
 
     if (!colision) return;
     player.getHit();
+  }
+
+  checkIsDead() {
+    const is_dead = this.life <= 0;
+    if (!is_dead) return;
+
+    GameEvents.dropLoot();
+    Main.instance().getPlayerInstance().increaseEnemiesKilled();
   }
 
   isVisible() {

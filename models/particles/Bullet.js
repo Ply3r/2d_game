@@ -4,8 +4,8 @@ import GameEvents from "../GameEvents.js";
 import Main from "../Main.js";
 
 class Bullet extends Particle {
-  constructor({ start_pos, end_pos, speed, size }) {
-    super({ start_pos, end_pos, speed, size });
+  constructor({ start_pos, end_pos }) {
+    super({ start_pos, end_pos, speed: 50, size: 10 });
   }
 
   draw() {

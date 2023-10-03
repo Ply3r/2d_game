@@ -62,7 +62,7 @@ class Gun {
     this.using_ammunition -= 1;
     const position = { x: player_pos.x, y: player_pos.y + 50 };
     const particles = Main.instance().getParticlesInstance();
-    particles.create(new Bullet({ start_pos: position, end_pos: mouse_position, size: 10, speed: 50 }));
+    particles.create(new Bullet({ start_pos: position, end_pos: mouse_position }));
   }
 
   attributes() {
