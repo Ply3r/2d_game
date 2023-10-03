@@ -1,4 +1,6 @@
 import Canvas from "../Canvas.js";
+import Main from "../Main.js";
+import Bullet from "../particles/Bullet.js";
 import Particles from "../particles/Particles.js";
 
 class Gun {
@@ -57,7 +59,8 @@ class Gun {
 
     this.using_ammunition -= 1;
     const position = { x: player_pos.x + 40, y: player_pos.y + 50 };
-    Particles.create(position, mouse_position, 50, null, 10);
+    const particles = Main.instance().getParticlesInstance();
+    particles.create(new Bullet({ start_pos: position, end_pos: mouse_position, size: 10, speed: 50 }));
   }
 
   attributes() {
