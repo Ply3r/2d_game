@@ -1,7 +1,6 @@
 import Canvas from "../Canvas.js";
 import Main from "../Main.js";
 import Bullet from "../particles/Bullet.js";
-import Particles from "../particles/Particles.js";
 
 class Gun {
   constructor({ magazine_size, total_ammunition, image, gun_size, automatic, bullet_time }) {
@@ -22,12 +21,15 @@ class Gun {
     const gun_img = new Image();
     gun_img.src = this.image;
 
-    drawer.setTransform(1, 0, 0, 1, player_pos.x + 40, player_pos.y + 70);
+    drawer.setTransform(1, 0, 0, 1, player_pos.x, player_pos.y + 70);
     const angle = Math.atan2(crosshair_pos.y - player_pos.y, crosshair_pos.x - player_pos.x);
-    drawer.rotate(angle)
+
+    const direction = crosshair_pos.x > player_pos.x ? 1 : -1;
+    drawer.scale(1, direction * 1);
+    drawer.rotate(direction * angle);
 
     const half = this.gun_size.y / 2
-    drawer.drawImage(gun_img, 0, -half, this.gun_size.x, this.gun_size.y);
+    drawer.drawImage(gun_img, -40, -half, this.gun_size.x, this.gun_size.y);
   }
 
   getAmmunition(amount) {
@@ -58,7 +60,7 @@ class Gun {
     }
 
     this.using_ammunition -= 1;
-    const position = { x: player_pos.x + 40, y: player_pos.y + 50 };
+    const position = { x: player_pos.x, y: player_pos.y + 50 };
     const particles = Main.instance().getParticlesInstance();
     particles.create(new Bullet({ start_pos: position, end_pos: mouse_position, size: 10, speed: 50 }));
   }

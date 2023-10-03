@@ -43,6 +43,7 @@ class Enemy {
   update() {
     this.move();
     if (this.invencible) this.takingHit();
+    this.checkCollisionWithPlayer();
 
     return this;
   }
@@ -61,6 +62,17 @@ class Enemy {
     const { x, y } = GameEvents.getNextPointInLine(this.position, player_pos, -(this.speed * 2));
     this.position.x = x;
     this.position.y = y;
+  }
+
+  checkCollisionWithPlayer() {
+    const player = Main.instance().getPlayerInstance();
+    const { invencible: player_invencible } = player.attributes();
+
+    if (player_invencible) return;
+    const colision = GameEvents.checkCollision(player, this);
+
+    if (!colision) return;
+    player.getHit();
   }
 
   isVisible() {
