@@ -2,8 +2,9 @@ import TommyGun from "./guns/TommyGun.js";
 import TecNine from "./guns/TecNine.js";
 import Main from "./Main.js";
 import Ammunition from "./particles/Ammunition.js";
+import Heart from "./particles/Heart.js";
 
-const ENEMY_SPAWN_RATE = 2000;
+const ENEMY_SPAWN_RATE = 1000;
 
 class GameEvents {
   static randomGun() {
@@ -28,9 +29,9 @@ class GameEvents {
   }
 
   static dropLoot(position) {
-    if (Math.random() > 0.2) return;
+    if (Math.random() > 0.3) return;
 
-    const possible_loots = [Ammunition];
+    const possible_loots = [Ammunition, Heart];
     const random_index = Math.floor(Math.random() * possible_loots.length)
     Main.instance().getParticlesInstance().create(new possible_loots[random_index](position))
   }

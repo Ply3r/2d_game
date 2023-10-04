@@ -135,6 +135,11 @@ class Player {
     this.enemies_killed += 1;
   }
 
+  increaseLife() {
+    this.life += 1;
+    if (this.life >= 5) this.life = 5;
+  }
+
   attributes() {
     return {
       curr_gun: this.inventory[0],
