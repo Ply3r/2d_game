@@ -2,7 +2,7 @@ import Canvas from "../Canvas.js";
 import GameEvents from "../GameEvents.js";
 
 class Particle {
-  MAX_TIME_ON_SCREEN = 1000
+  MAX_TIME_ON_SCREEN = 10000
 
   constructor({ start_pos, end_pos, speed, image, size }) {
     this.image = image;
@@ -21,7 +21,7 @@ class Particle {
 
     const image = new Image();
     image.src = this.image;
-    drawer.drawImage(this.image, this.curr_pos.x, this.curr_pos.y, this.size, this.size);
+    drawer.drawImage(image, this.curr_pos.x, this.curr_pos.y, this.size, this.size);
   }
 
   update() {

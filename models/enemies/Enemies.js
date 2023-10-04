@@ -8,9 +8,16 @@ class Enemies {
 
   create() {
     const random_enemy = this.possible_options[Math.floor(Math.random() * this.possible_options.length)];
-    const random_position = { x: Math.random() * window.innerWidth, y: Math.random() * window.innerHeight }
 
-    this.enemies_array.push(new random_enemy(random_position));
+    const random_position = (ceil) => {
+      const random_direction = () => Math.random() > 0.5 ? 1 : -1;
+      let pos = Math.random() * ceil;
+      pos += random_direction() * pos;
+
+      return pos;
+    }
+
+    this.enemies_array.push(new random_enemy({ x: random_position(window.innerWidth), y: random_position(window.innerHeight) }));
   }
 
   draw() {
