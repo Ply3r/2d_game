@@ -1,9 +1,10 @@
 import StandardZombie from "./StandardZombie.js";
+import RunningZombie from "./RunningZombie.js";
 
 class Enemies {
   constructor() {
     this.enemies_array = [];
-    this.possible_options = [StandardZombie]
+    this.possible_options = [StandardZombie, RunningZombie]
   }
 
   create() {
