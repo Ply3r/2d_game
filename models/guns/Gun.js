@@ -33,10 +33,13 @@ class Gun {
   }
 
   getAmmunition(amount) {
-    const remaining = amount - this.using_ammunition;
-    this.using_ammunition = amount >= this.magazine_size ? this.magazine_size : this.using_ammunition + amount;
+    this.using_ammunition += amount;
 
-    if (remaining > 0) this.total_ammunition += remaining;
+    if (this.using_ammunition > this.magazine_size) {
+      const remaining = this.using_ammunition - this.magazine_size;
+      this.using_ammunition = this.magazine_size;
+      this.total_ammunition += remaining
+    }
   }
 
   fire(player_pos, mouse_position) {

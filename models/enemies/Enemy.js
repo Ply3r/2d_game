@@ -83,7 +83,7 @@ class Enemy {
     const is_dead = this.life <= 0;
     if (!is_dead) return;
 
-    GameEvents.dropLoot();
+    GameEvents.dropLoot(this.position);
     Main.instance().getPlayerInstance().increaseEnemiesKilled();
   }
 
