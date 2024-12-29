@@ -6,7 +6,8 @@ class TecNine extends Gun {
       magazine_size: 20, 
       total_ammunition: 40, 
       image: '../../assets/guns/tec_9.png', 
-      gun_size: { x: 60, y: 40 }
+      gun_size: { x: 60, y: 40 },
+      reloading_time: 2000,
     })
   }
 }
