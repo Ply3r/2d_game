@@ -3,6 +3,10 @@ class ItemUpdater {
     this.items = [];
   }
 
+  reset() {
+    this.items = [];
+  }
+
   create(item) {
     this.items.push(item);
   }

@@ -1,19 +1,24 @@
-import IngameInterface from "./config/IngameInterface.js";
+import InGame from "./screens/InGame.js";
 import Player from "./config/Player.js";
 import Enemies from "./enemies/Enemies.js";
 import ItemUpdater from "./config/ItemUpdater.js";
 import Controls from "./config/Controls.js";
 import GameEvents from "./config/GameEvents.js";
 import Canvas from "./config/Canvas.js";
+import Menu from "./screens/Menu.js";
+import GameOver from "./screens/GameOver.js";
 
 let instance = null;
 
 class Main {
   constructor() {
     this.player = new Player();
-    this.ingame_interface = new IngameInterface();
+    this.inGame = new InGame();
     this.enemies = new Enemies();
     this.itemUpdater = new ItemUpdater();
+
+    this.gameRunning = false;
+    this.gameOver = false;
     this.fps = 60;
   }
 
@@ -25,7 +30,7 @@ class Main {
     return instance;
   }
 
-  startGame() {
+  start() {
     Controls.addEventListeners();
     GameEvents.createEnemies();
 
@@ -33,8 +38,12 @@ class Main {
     let lastFrameTime = performance.now();
 
     const gameLoop = (currentTime) => {
+      if (!this.gameRunning) {
+        this.gameOver ? new GameOver() : new Menu();
+        return requestAnimationFrame(gameLoop);
+      }
+    
       const deltaTime = currentTime - lastFrameTime;
-
       if (deltaTime >= frameDuration) {
         lastFrameTime = currentTime;
 
@@ -42,7 +51,7 @@ class Main {
           this.itemUpdater,
           this.player,
           this.enemies,
-          this.ingame_interface,
+          this.inGame,
         ]);
       }
       
@@ -50,6 +59,24 @@ class Main {
     }
     
     gameLoop(performance.now());
+  }
+
+  startGame() {
+    document.body.style.cursor = 'none';
+    this.resetGame();    
+  }
+
+  finishGame() {
+    this.gameOver = true;
+    this.gameRunning = false;
+  }
+
+  resetGame() {
+    this.gameRunning = true;
+    this.gameOver = false;
+    this.player.reset();
+    this.enemies.reset();
+    this.itemUpdater.reset();
   }
 
   getPlayerInstance() {
@@ -64,8 +91,8 @@ class Main {
     return this.enemies;
   }
 
-  getIngameInterfaceInstance() {
-    return this.ingame_interface;
+  getInGameInstance() {
+    return this.inGame;
   }
 }
 

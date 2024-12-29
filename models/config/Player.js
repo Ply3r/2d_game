@@ -16,14 +16,17 @@ class Player {
   }
 
   setup() {
+    this.reset();
+    Canvas.addListener('click', () => this.shoot());
+  }
+
+  reset() {
     this.position = { x: Math.floor(window.innerWidth / 2), y: Math.floor(window.innerHeight / 2) };
     this.inventory = [GameEvents.randomGun()];
     this.current_sprite = 0;
     this.life = this.PLAYER_TOTAL_LIFE;
     this.invencible = false;
     this.enemies_killed = 0;
-
-    Canvas.addListener('click', () => this.shoot());
   }
 
   draw() {
@@ -95,9 +98,7 @@ class Player {
     this.life -= 1;
     this.invencible = true;
 
-    if (this.life <= 0) {
-      location.reload();
-    }
+    if (this.life <= 0) Main.instance().finishGame();
 
     setTimeout(() => {
       this.invencible = false;

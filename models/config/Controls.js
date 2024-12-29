@@ -18,9 +18,6 @@ class Controls {
   }
 
   static keyDown(event) {
-    const available_keys = ['a', 'w', 's', 'd'];
-
-    if (!available_keys.includes(event.key)) return;
     holding_keys.push(event.key);
   }
 
