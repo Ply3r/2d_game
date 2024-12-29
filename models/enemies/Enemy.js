@@ -24,10 +24,12 @@ class Enemy {
     const image = new Image();
     image.src = `../../assets/enemies/${this.name}/${this.curr_sprite}.gif`;
 
-    const x_position = this.direction === 1 ? this.position.x - this.size.x : this.position.x;
-    drawer.setTransform(1, 0, 0, 1, x_position, this.position.y);
+    drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
     drawer.scale(this.direction, 1);
-    drawer.drawImage(image, 0, 0, this.size.x, this.size.y);
+
+    const x_position = this.direction === -1 ? -this.size.x :0;
+    drawer.drawImage(image, x_position, 0, this.size.x, this.size.y);
+  
     drawer.restore();
 
     this.curr_sprite += 1;

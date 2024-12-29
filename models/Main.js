@@ -62,7 +62,7 @@ class Main {
     if (this.gameRunning) return;
 
     Controls.addEventListeners();
-    GameEvents.createEnemies();
+    this.enemiesSpawnRateInterval = GameEvents.createEnemies();
     document.body.style.cursor = 'none';
     this.resetGame();
   }
@@ -70,6 +70,7 @@ class Main {
   finishGame() {
     this.gameOver = true;
     this.gameRunning = false;
+    clearInterval(this.enemiesSpawnRateInterval);
   }
 
   resetGame() {

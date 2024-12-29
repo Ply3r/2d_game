@@ -15,18 +15,22 @@ class GameEvents {
   static createEnemies() {
     const ENEMY_SPAWN_RATE = 1000;
 
-    setInterval(() => {
+    return setInterval(() => {
       Main.instance().getEnemiesInstance().create();
     }, ENEMY_SPAWN_RATE)
   }
 
-  // For some reason this way works better than the right way :/
   static checkCollision(first_element, second_element) {
     const { position: f_pos, size: f_size } = first_element.attributes();
     const { position: s_pos, size: s_size } = second_element.attributes();
+    const tolerance = 0.01; // Adjust as needed
   
-    return (f_pos.x <= s_pos.x + s_size.x && f_pos.x >= s_pos.x - s_size.x) && 
-           (f_pos.y <= s_pos.y + s_size.y && f_pos.y >= s_pos.y - s_size.y)
+    return (
+      f_pos.x < s_pos.x + s_size.x + tolerance &&
+      f_pos.x + f_size.x > s_pos.x - tolerance &&
+      f_pos.y < s_pos.y + s_size.y + tolerance &&
+      f_pos.y + f_size.y > s_pos.y - tolerance
+    );
   }
 
   static dropLoot(position) {
