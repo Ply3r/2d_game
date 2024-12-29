@@ -48,7 +48,14 @@ class Player {
   update() {
     this.move();
     this.automaticShoot();
+    this.reload();
   }
+
+  reload() {
+    const holding_keys = Controls.getHoldingKeys();
+    if (!holding_keys.includes('r')) return;
+    this.inventory[0].reload();
+  };
 
   move() {
     const holding_keys = Controls.getHoldingKeys();

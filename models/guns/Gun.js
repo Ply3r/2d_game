@@ -60,13 +60,21 @@ class Gun {
   }
 
   reload() {
-    this.reloading = true;
+    if (this.reloading) return;
 
-    const new_using_ammunition = this.total_ammunition >= this.magazine_size ? this.magazine_size : this.total_ammunition;
+    this.reloading = true;
+    let new_using_ammunition;
+
+    if (this.using_ammunition > 0) {
+      new_using_ammunition = this.magazine_size - this.using_ammunition;
+    } else {
+      new_using_ammunition = this.total_ammunition >= this.magazine_size ? this.magazine_size : this.total_ammunition;
+    }
+
     this.total_ammunition -= new_using_ammunition;
     this.using_ammunition += new_using_ammunition;
-
     this.reload_start_time = Date.now();
+
     setTimeout(() => this.reloading = false, this.reloading_time);
   }
 
