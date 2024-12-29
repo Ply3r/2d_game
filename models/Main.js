@@ -1,10 +1,10 @@
-import IngameInterface from "./IngameInterface.js";
-import Player from "./Player.js";
+import IngameInterface from "./config/IngameInterface.js";
+import Player from "./config/Player.js";
 import Enemies from "./enemies/Enemies.js";
-import Particles from "./particles/Particles.js";
-import Controls from "./Controls.js";
-import GameEvents from "./GameEvents.js";
-import Canvas from "./Canvas.js";
+import ItemUpdater from "./config/ItemUpdater.js";
+import Controls from "./config/Controls.js";
+import GameEvents from "./config/GameEvents.js";
+import Canvas from "./config/Canvas.js";
 
 let instance = null;
 
@@ -13,7 +13,8 @@ class Main {
     this.player = new Player();
     this.ingame_interface = new IngameInterface();
     this.enemies = new Enemies();
-    this.particles = new Particles();
+    this.itemUpdater = new ItemUpdater();
+    this.fps = 60;
   }
 
   static instance() {
@@ -28,26 +29,35 @@ class Main {
     Controls.addEventListeners();
     GameEvents.createEnemies();
 
-    const gameLoop = () => {
-      Canvas.draw([
-        this.particles,
-        this.player,
-        this.enemies,
-        this.ingame_interface,
-      ]);
-    
+    const frameDuration = 1000 / this.fps;
+    let lastFrameTime = performance.now();
+
+    const gameLoop = (currentTime) => {
+      const deltaTime = currentTime - lastFrameTime;
+
+      if (deltaTime >= frameDuration) {
+        lastFrameTime = currentTime;
+
+        Canvas.draw([
+          this.itemUpdater,
+          this.player,
+          this.enemies,
+          this.ingame_interface,
+        ]);
+      }
+      
       requestAnimationFrame(gameLoop);
     }
     
-    gameLoop();
+    gameLoop(performance.now());
   }
 
   getPlayerInstance() {
     return this.player;
   }
 
-  getParticlesInstance() {
-    return this.particles;
+  getItemUpdaterInstance() {
+    return this.itemUpdater;
   }
 
   getEnemiesInstance() {

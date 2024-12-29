@@ -1,9 +1,9 @@
-import Particle from "./Particle.js";
+import Drop from "./Drop.js";
 import Main from "../Main.js";
 
-class Heart extends Particle {
+class Heart extends Drop {
   constructor(position) {
-    super({ start_pos: position, end_pos: position, size: 50, image: '../../assets/heart.png' });
+    super({ position: position, size: 50, image: '../../assets/heart.png' });
   }
 
   update() {
@@ -16,8 +16,8 @@ class Heart extends Particle {
     const { position: player_pos } = player.attributes()
 
     if (
-      Math.abs(player_pos.x - this.curr_pos.x) < 50 &&
-      Math.abs(player_pos.y - this.curr_pos.y) < 50
+      Math.abs(player_pos.x - this.position.x) < 50 &&
+      Math.abs(player_pos.y - this.position.y) < 50
     ) 
     {
       player.increaseLife();

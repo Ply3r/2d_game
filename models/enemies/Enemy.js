@@ -1,5 +1,5 @@
-import Canvas from "../Canvas.js";
-import GameEvents from "../GameEvents.js";
+import Canvas from "../config/Canvas.js";
+import GameEvents from "../config/GameEvents.js";
 import Main from "../Main.js";
 
 class Enemy {

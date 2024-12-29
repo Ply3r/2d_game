@@ -1,9 +1,9 @@
 import Main from "../Main.js";
-import Particle from "./Particle.js";
+import Drop from "./Drop.js";
 
-class Ammunition extends Particle {
+class Ammunition extends Drop {
   constructor(position) {
-    super({ start_pos: position, end_pos: position, size: 50, image: '../../assets/ammunition.png' });
+    super({ position: position, size: 50, image: '../../assets/ammunition.png' });
   }
 
   update() {
@@ -22,8 +22,8 @@ class Ammunition extends Particle {
     const { position: player_pos } = player.attributes()
 
     if (
-      Math.abs(player_pos.x - this.curr_pos.x) < 50 &&
-      Math.abs(player_pos.y - this.curr_pos.y) < 50
+      Math.abs(player_pos.x - this.position.x) < 50 &&
+      Math.abs(player_pos.y - this.position.y) < 50
     ) 
     {
       const gun = player.attributes().curr_gun;

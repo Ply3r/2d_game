@@ -1,6 +1,6 @@
 import Canvas from "./Canvas.js";
 import Controls from "./Controls.js";
-import Main from "./Main.js";
+import Main from "../Main.js";
 
 class IngameInterface {
   draw() {

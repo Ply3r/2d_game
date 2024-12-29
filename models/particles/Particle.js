@@ -1,5 +1,5 @@
-import Canvas from "../Canvas.js";
-import GameEvents from "../GameEvents.js";
+import Canvas from "../config/Canvas.js";
+import GameEvents from "../config/GameEvents.js";
 
 class Particle {
   MAX_TIME_ON_SCREEN = 10000

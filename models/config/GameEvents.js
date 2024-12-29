@@ -1,8 +1,8 @@
-import TommyGun from "./guns/TommyGun.js";
-import TecNine from "./guns/TecNine.js";
-import Main from "./Main.js";
-import Ammunition from "./particles/Ammunition.js";
-import Heart from "./particles/Heart.js";
+import TommyGun from "../guns/TommyGun.js";
+import TecNine from "../guns/TecNine.js";
+import Main from "../Main.js";
+import Ammunition from "../drops/Ammunition.js";
+import Heart from "../drops/Heart.js";
 
 const ENEMY_SPAWN_RATE = 1000;
 
@@ -33,7 +33,7 @@ class GameEvents {
 
     const possible_loots = [Ammunition, Heart];
     const random_index = Math.floor(Math.random() * possible_loots.length)
-    Main.instance().getParticlesInstance().create(new possible_loots[random_index](position))
+    Main.instance().getItemUpdaterInstance().create(new possible_loots[random_index](position))
   }
 
   static getNextPointInLine(first_point, second_point, speed) {

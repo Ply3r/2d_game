@@ -1,6 +1,6 @@
 import Canvas from "./Canvas.js";
 import Controls from "./Controls.js";
-import Main from "./Main.js";
+import Main from "../Main.js";
 import GameEvents from "./GameEvents.js";
 
 class Player {
@@ -92,12 +92,12 @@ class Player {
   }
 
   getHit() {
+    this.life -= 1;
+    this.invencible = true;
+
     if (this.life <= 0) {
       location.reload();
     }
-
-    this.life -= 1;
-    this.invencible = true;
 
     setTimeout(() => {
       this.invencible = false;
