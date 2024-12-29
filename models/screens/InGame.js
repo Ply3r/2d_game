@@ -32,13 +32,11 @@ class InGame {
 
     // Reloading Animation
     if (gun_attributes.reloading) {
-      this.drawer.fillRect(window.innerWidth - 250, 20, 200, 100);
-
       const miliseconds_diff = Date.now() - gun_attributes.reload_start_time;
       const reload_percentage = (miliseconds_diff * 100) / gun_attributes.reloading_time;
       const bar_size = (reload_percentage * 190) / 100;
 
-      this.drawer.clearRect(window.innerWidth - 245, 25, bar_size, 90);
+      this.drawer.fillRect(window.innerWidth - 250, 20, 200 - bar_size, 100);
     }
 
     this.drawer.font = "36px Pixelify Sans";
