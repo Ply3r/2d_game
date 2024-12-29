@@ -28,8 +28,13 @@ class Enemy {
     drawer.scale(this.direction, 1);
 
     const x_position = this.direction === -1 ? -this.size.x :0;
+
+    if (this.invencible) {
+      drawer.filter = "brightness(1.5)"; // Increase brightness (1.5 = 150%)
+    }
+
     drawer.drawImage(image, x_position, 0, this.size.x, this.size.y);
-  
+    drawer.filter = "none";
     drawer.restore();
 
     this.curr_sprite += 1;

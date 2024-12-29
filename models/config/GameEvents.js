@@ -1,12 +1,12 @@
-import TommyGun from "../guns/TommyGun.js";
-import TecNine from "../guns/TecNine.js";
+import TommyGun from "../weapons/guns/TommyGun.js";
+import TecNine from "../weapons/guns/TecNine.js";
 import Main from "../Main.js";
 import Ammunition from "../drops/Ammunition.js";
 import Heart from "../drops/Heart.js";
 
 class GameEvents {
   static randomGun() {
-    const guns = [TommyGun];
+    const guns = [TommyGun, TecNine];
     const random_index = Math.floor(Math.random() * guns.length);
 
     return new guns[random_index]();

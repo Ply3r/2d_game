@@ -5,8 +5,9 @@ class TecNine extends Gun {
     super({ 
       magazine_size: 20, 
       total_ammunition: 40, 
-      image: '../../assets/guns/tec_9.png', 
-      gun_size: { x: 60, y: 40 },
+      image: '../../assets/weapons/tec_9.png', 
+      size: { x: 60, y: 40 },
+      distance: 50,
       reloading_time: 2000,
     })
   }

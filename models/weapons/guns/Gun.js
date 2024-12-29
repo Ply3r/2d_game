@@ -1,37 +1,22 @@
-import Canvas from "../config/Canvas.js";
-import Main from "../Main.js";
-import Bullet from "../particles/Bullet.js";
+import Main from "../../Main.js";
+import Bullet from "../../particles/Bullet.js";
+import Weapon from "../Weapon.js";
 
-class Gun {
-  constructor({ magazine_size, total_ammunition, image, gun_size, automatic, bullet_time, reloading_time }) {
+class Gun extends Weapon {
+  constructor({ magazine_size, total_ammunition, image, distance, size, automatic, bullet_time, reloading_time }) {
+    super({ image, size, distance });
+
     this.magazine_size = magazine_size;
     this.using_ammunition = magazine_size;
     this.total_ammunition = total_ammunition;
     this.reloading_time = reloading_time;
     this.image = image;
-    this.gun_size = gun_size;
+    this.size = size;
     this.automatic = automatic;
     this.bullet_time = bullet_time;
     this.can_shoot = true;
     this.reloading = false;
     this.reload_start_time = 0;
-  }
-
-  draw(player_pos, crosshair_pos) {
-    const drawer = Canvas.drawer();
-
-    const gun_img = new Image();
-    gun_img.src = this.image;
-
-    drawer.setTransform(1, 0, 0, 1, player_pos.x, player_pos.y + 70);
-    const angle = Math.atan2(crosshair_pos.y - player_pos.y, crosshair_pos.x - player_pos.x);
-
-    const direction = crosshair_pos.x > player_pos.x ? 1 : -1;
-    drawer.scale(1, direction * 1);
-    drawer.rotate(direction * angle);
-
-    const half = this.gun_size.y / 2
-    drawer.drawImage(gun_img, -40, -half, this.gun_size.x, this.gun_size.y);
   }
 
   getAmmunition(amount) {
