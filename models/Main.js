@@ -31,9 +31,6 @@ class Main {
   }
 
   start() {
-    Controls.addEventListeners();
-    GameEvents.createEnemies();
-
     const frameDuration = 1000 / this.fps;
     let lastFrameTime = performance.now();
 
@@ -62,8 +59,12 @@ class Main {
   }
 
   startGame() {
+    if (this.gameRunning) return;
+
+    Controls.addEventListeners();
+    GameEvents.createEnemies();
     document.body.style.cursor = 'none';
-    this.resetGame();    
+    this.resetGame();
   }
 
   finishGame() {

@@ -24,7 +24,8 @@ class Enemy {
     const image = new Image();
     image.src = `../../assets/enemies/${this.name}/${this.curr_sprite}.gif`;
 
-    drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
+    const x_position = this.direction === 1 ? this.position.x - this.size.x : this.position.x;
+    drawer.setTransform(1, 0, 0, 1, x_position, this.position.y);
     drawer.scale(this.direction, 1);
     drawer.drawImage(image, 0, 0, this.size.x, this.size.y);
     drawer.restore();
@@ -76,7 +77,7 @@ class Enemy {
     const colision = GameEvents.checkCollision(player, this);
 
     if (!colision) return;
-    player.getHit();
+    player.getHit(this.strength);
   }
 
   checkIsDead() {

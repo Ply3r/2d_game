@@ -4,8 +4,6 @@ import Main from "../Main.js";
 import Ammunition from "../drops/Ammunition.js";
 import Heart from "../drops/Heart.js";
 
-const ENEMY_SPAWN_RATE = 1000;
-
 class GameEvents {
   static randomGun() {
     const guns = [TommyGun];
@@ -15,21 +13,20 @@ class GameEvents {
   }
 
   static createEnemies() {
+    const ENEMY_SPAWN_RATE = 1000;
+
     setInterval(() => {
       Main.instance().getEnemiesInstance().create();
     }, ENEMY_SPAWN_RATE)
   }
 
+  // For some reason this way works better than the right way :/
   static checkCollision(first_element, second_element) {
     const { position: f_pos, size: f_size } = first_element.attributes();
     const { position: s_pos, size: s_size } = second_element.attributes();
   
-    return (
-      f_pos.x < s_pos.x + s_size.x && // Right side of first is left of second
-      f_pos.x + f_size.x > s_pos.x && // Left side of first is right of second
-      f_pos.y < s_pos.y + s_size.y && // Bottom of first is above top of second
-      f_pos.y + f_size.y > s_pos.y    // Top of first is below bottom of second
-    );
+    return (f_pos.x <= s_pos.x + s_size.x && f_pos.x >= s_pos.x - s_size.x) && 
+           (f_pos.y <= s_pos.y + s_size.y && f_pos.y >= s_pos.y - s_size.y)
   }
 
   static dropLoot(position) {

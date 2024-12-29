@@ -38,7 +38,9 @@ class InGame {
     // Life
     drawer.fillStyle ="rgb(255, 255, 255)" 
     drawer.font = "28px Pixelify Sans";
-    drawer.fillText(`${'❤️'.repeat(player_attributes.life)}`, 20, 50);
+
+    if (player_attributes.life >= 0)
+      drawer.fillText(`${'❤️'.repeat(player_attributes.life)}`, 20, 50);
 
     // Enemies Kill Count
     drawer.fillText(`💀 x ${player_attributes.enemies_killed}`, 20, 100);

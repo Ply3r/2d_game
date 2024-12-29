@@ -94,8 +94,8 @@ class Player {
     this.inventory[0].fire(this.position, Controls.getMousePosition());
   }
 
-  getHit() {
-    this.life -= 1;
+  getHit(strength) {
+    this.life -= strength;
     this.invencible = true;
 
     if (this.life <= 0) Main.instance().finishGame();
