@@ -21,7 +21,7 @@ class Particle {
 
     const image = new Image();
     image.src = this.image;
-    drawer.drawImage(image, this.curr_pos.x, this.curr_pos.y, this.size, this.size);
+    drawer.drawImage(image, this.curr_pos.x, this.curr_pos.y, this.size.x, this.size.y);
   }
 
   update() {

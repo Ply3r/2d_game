@@ -23,9 +23,13 @@ class GameEvents {
   static checkCollision(first_element, second_element) {
     const { position: f_pos, size: f_size } = first_element.attributes();
     const { position: s_pos, size: s_size } = second_element.attributes();
-
-    return (f_pos.x <= s_pos.x + s_size.x && f_pos.x >= s_pos.x - s_size.x) && 
-           (f_pos.y <= s_pos.y + s_size.y && f_pos.y >= s_pos.y - s_size.y)
+  
+    return (
+      f_pos.x < s_pos.x + s_size.x && // Right side of first is left of second
+      f_pos.x + f_size.x > s_pos.x && // Left side of first is right of second
+      f_pos.y < s_pos.y + s_size.y && // Bottom of first is above top of second
+      f_pos.y + f_size.y > s_pos.y    // Top of first is below bottom of second
+    );
   }
 
   static dropLoot(position) {

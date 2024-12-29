@@ -6,14 +6,14 @@ import Main from "../Main.js";
 class Bullet extends Particle {
   constructor({ start_pos, end_pos }) {
     const final_position = Bullet.getBulletFinalPosition(start_pos, end_pos);
-    super({ start_pos, end_pos: final_position, speed: 50, size: 10 });
+    super({ start_pos, end_pos: final_position, speed: 50, size: { x: 10, y: 10 } });
   }
 
   draw() {
     const drawer = Canvas.drawer();
 
     drawer.fillStyle = "rgb(255, 255, 255)";
-    drawer.fillRect(this.curr_pos.x, this.curr_pos.y, this.size, this.size);
+    drawer.fillRect(this.curr_pos.x, this.curr_pos.y, this.size.x, this.size.y);
   }
 
   update() {

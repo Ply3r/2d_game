@@ -6,7 +6,7 @@ import GameEvents from "./GameEvents.js";
 class Player {
   SPRITE_WIDTH = 16;
   SPRITE_HEIGHT = 20;
-  PLAYER_SIZE = 80;
+  PLAYER_SIZE = { x: 80, y: 80 };
   MOVE_SPEED = 8;
   PLAYER_TOTAL_LIFE = 3;
   INVENCIBLE_TIME_AFTER_HIT = 500;
@@ -35,7 +35,7 @@ class Player {
     const img_pos = this.getImagePosition();
     player_img.src = './assets/player.png';
     drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
-    drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, -40, 0, this.PLAYER_SIZE, this.PLAYER_SIZE)
+    drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, -40, 0, this.PLAYER_SIZE.x, this.PLAYER_SIZE.y)
 
     // Gun
     const gun = this.inventory[0];
@@ -64,7 +64,7 @@ class Player {
   updatePosition(holding_keys, move_speed) {
     if(holding_keys.includes('a') && this.position.x > 40) this.position.x -= move_speed;
     if(holding_keys.includes('w') && this.position.y > 0) this.position.y -= move_speed;
-    if(holding_keys.includes('s') && this.position.y < window.innerHeight - this.PLAYER_SIZE) this.position.y += move_speed;
+    if(holding_keys.includes('s') && this.position.y < window.innerHeight - this.PLAYER_SIZE.y) this.position.y += move_speed;
     if(holding_keys.includes('d') && this.position.x < window.innerWidth - 40) this.position.x += move_speed;
   }
 
