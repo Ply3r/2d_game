@@ -3,20 +3,17 @@ import Bullet from "../../particles/Bullet.js";
 import Weapon from "../Weapon.js";
 
 class Gun extends Weapon {
-  constructor({ magazine_size, total_ammunition, image, distance, size, automatic, bullet_time, reloading_time }) {
-    super({ image, size, distance });
+  constructor({ name, magazine_size, total_ammunition, image, distance, size, automatic, bullet_time, reload_time }) {
+    super({ name, image, size, reload_time, distance, type: 'gun' });
 
     this.magazine_size = magazine_size;
     this.using_ammunition = magazine_size;
     this.total_ammunition = total_ammunition;
-    this.reloading_time = reloading_time;
     this.image = image;
     this.size = size;
     this.automatic = automatic;
     this.bullet_time = bullet_time;
     this.can_shoot = true;
-    this.reloading = false;
-    this.reload_start_time = 0;
   }
 
   getAmmunition(amount) {
@@ -29,7 +26,7 @@ class Gun extends Weapon {
     }
   }
 
-  fire(player_pos, mouse_position) {
+  attack(player_pos, mouse_position) {
     if (this.reloading || !this.can_shoot) return;
     if (this.using_ammunition <= 0) return this.reload();
 
@@ -60,17 +57,19 @@ class Gun extends Weapon {
     this.using_ammunition += new_using_ammunition;
     this.reload_start_time = Date.now();
 
-    setTimeout(() => this.reloading = false, this.reloading_time);
+    setTimeout(() => this.reloading = false, this.reload_time);
   }
 
   attributes() {
     return {
+      name: this.name,
       total_ammunition: this.total_ammunition,
       using_ammunition: this.using_ammunition,
       automatic: this.automatic,
       reloading: this.reloading,
-      reloading_time: this.reloading_time,
+      reload_time: this.reload_time,
       reload_start_time: this.reload_start_time,
+      type: this.type,
       image: this.image
     }
   }

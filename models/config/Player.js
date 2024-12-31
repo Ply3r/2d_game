@@ -17,16 +17,17 @@ class Player {
 
   setup() {
     this.reset();
-    Canvas.addListener('click', () => this.shoot());
+    Canvas.addListener('click', () => this.attack());
   }
 
   reset() {
     this.position = { x: Math.floor(window.innerWidth / 2), y: Math.floor(window.innerHeight / 2) };
-    this.inventory = [GameEvents.randomGun()];
+    this.inventory = [GameEvents.randomGun(), GameEvents.randomMelee()];
     this.current_sprite = 0;
     this.life = this.PLAYER_TOTAL_LIFE;
     this.invencible = false;
     this.enemies_killed = 0;
+    this.changing_inventory = false;
   }
 
   draw() {
@@ -40,15 +41,16 @@ class Player {
     drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
     drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, -40, 0, this.PLAYER_SIZE.x, this.PLAYER_SIZE.y)
 
-    // Gun
-    const gun = this.inventory[0];
-    gun.draw(this.position, Controls.getMousePosition());
+    // weapon
+    const weapon = this.inventory[0];
+    weapon.draw(this.position, Controls.getMousePosition());
   }
 
   update() {
     this.move();
-    this.automaticShoot();
+    this.automaticAttack();
     this.reload();
+    this.changeInventory();
   }
 
   reload() {
@@ -56,6 +58,21 @@ class Player {
     if (!holding_keys.includes('r')) return;
     this.inventory[0].reload();
   };
+
+  changeInventory() {
+    if (this.changing_inventory) return;
+  
+    this.changing_inventory = true;
+    const holding_keys = Controls.getHoldingKeys();
+
+    if(holding_keys.includes('2')) {
+      const second_item = this.inventory[1];
+      this.inventory.splice(1, 1);
+      this.inventory = [second_item, ...this.inventory]
+    }
+
+    setTimeout(() => this.changing_inventory = false, 100)
+  }
 
   move() {
     const holding_keys = Controls.getHoldingKeys();
@@ -86,19 +103,19 @@ class Player {
     }
   }
 
-  automaticShoot() {
-    const gun_attributes = this.inventory[0].attributes();
+  automaticAttack() {
+    const weapon_attributes = this.inventory[0].attributes();
 
-    if (gun_attributes.automatic) {
+    if (weapon_attributes.automatic) {
       const holding_click = Controls.getHoldingClick();
       if (!holding_click) return;
 
-      this.shoot();
+      this.attack();
     }
   }
 
-  shoot() {
-    this.inventory[0].fire(this.position, Controls.getMousePosition());
+  attack() {
+    this.inventory[0].attack(this.position, Controls.getMousePosition());
   }
 
   getHit(strength) {
@@ -150,7 +167,7 @@ class Player {
 
   attributes() {
     return {
-      curr_gun: this.inventory[0],
+      inventory: this.inventory,
       life: this.life,
       position: this.position,
       size: this.PLAYER_SIZE,

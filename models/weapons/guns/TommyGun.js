@@ -9,7 +9,7 @@ class TommyGun extends Gun {
       size: { x: 100, y: 80 },
       automatic: true,
       bullet_time: 200,
-      reloading_time: 2000,
+      reload_time: 2000,
     })
   }
 }

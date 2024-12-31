@@ -1,15 +1,30 @@
 import TommyGun from "../weapons/guns/TommyGun.js";
 import TecNine from "../weapons/guns/TecNine.js";
+import Knife from "../weapons/melee/Knife.js";
 import Main from "../Main.js";
 import Ammunition from "../drops/Ammunition.js";
 import Heart from "../drops/Heart.js";
 
 class GameEvents {
+  static randomWeapon(type = null) {
+    const types = ['Gun', 'Melee'];
+
+    if (!type) type = types[Math.floor(Math.random() * types.length)];
+    return this[`random${type}`]();
+  }
+
   static randomGun() {
     const guns = [TommyGun, TecNine];
     const random_index = Math.floor(Math.random() * guns.length);
 
     return new guns[random_index]();
+  }
+
+  static randomMelee() {
+    const weapons = [Knife];
+    const random_index = Math.floor(Math.random() * weapons.length);
+
+    return new weapons[random_index]();
   }
 
   static createEnemies() {

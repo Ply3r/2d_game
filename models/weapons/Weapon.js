@@ -1,10 +1,16 @@
 import Canvas from "../config/Canvas.js";
 
 class Weapon {
-  constructor({ image, size, distance = 0 }) {
+  constructor({ name, image, size, reload_time, use_ammunition, type, distance = { x: 0, y: 0 } }) {
+    this.name = name;
     this.image = image;
     this.size = size;
+    this.use_ammunition = use_ammunition;
+    this.reload_time = reload_time;
     this.distance = distance;
+    this.type = type;
+    this.reloading = false;
+    this.reload_start_time = null;
   }
 
   draw(player_pos, crosshair_pos) {
@@ -21,17 +27,32 @@ class Weapon {
     drawer.rotate(direction * angle);
 
     const half = this.size.y / 2
-    drawer.drawImage(img, -40 + this.distance, -half, this.size.x, this.size.y);
+    drawer.drawImage(img, -40 + this.distance.x, -half + this.distance.y, this.size.x, this.size.y);
   }
 
-  attack(player_pos, mouse_position) {
+  attack(player_pos, mouse_position) {}
 
+  reload() {
+    if (this.reloading) return;
+
+    this.reloading = true;
+    this.reload_start_time = Date.now();
+    setTimeout(() => this.reloading = false, this.reload_time);
+  }
+
+  getType() {
+    return this.type;
   }
 
   attributes() {
     return {
+      name: this.name,
       image: this.image,
-      size: this.size
+      size: this.size,
+      type: this.type,
+      reloading: this.reloading,
+      reload_time: this.reload_time,
+      reload_start_time: this.reload_start_time,
     }
   }
 }

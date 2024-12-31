@@ -26,8 +26,8 @@ class Ammunition extends Drop {
       Math.abs(player_pos.y - this.position.y) < 50
     ) 
     {
-      const gun = player.attributes().curr_gun;
-      gun.getAmmunition(this.randomAmmo());
+      const weapon = player.attributes().inventory[0];
+      if (weapon.getType() === 'gun') weapon.getAmmunition(this.randomAmmo());
       this.visible = false;
     }
   }

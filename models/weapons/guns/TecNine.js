@@ -7,8 +7,9 @@ class TecNine extends Gun {
       total_ammunition: 40, 
       image: '../../assets/weapons/tec_9.png', 
       size: { x: 60, y: 40 },
-      distance: 50,
-      reloading_time: 2000,
+      automatic: false,
+      distance: { x: 50, y: 0 },
+      reload_time: 1000,
     })
   }
 }
