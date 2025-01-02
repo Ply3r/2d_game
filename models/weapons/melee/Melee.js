@@ -3,17 +3,21 @@ import Canvas from '../../config/Canvas.js';
 import Main from "../../Main.js";
 
 class Melee extends Weapon {
+  ATTACK_TIME = 100
+
   constructor({ name, image, total_sprites, size, distance, reload_time }) {
     super({ name, image, size, reload_time, distance, type: 'melee' });
+    this.attacking = false;
     this.total_sprites = total_sprites;
   }
 
   attack(player_pos, mouse_position) {
-    const attack_direction = this.getAttackDirection(player_pos, mouse_position);
-    const attack_area = this.getAttackArea(player_pos, attack_direction, { x: 0, y: 20 });
+    if (this.reloading) return;
 
-    // The draw part needs to be improved!
-    // this.drawAttackArea(attack_area, attack_direction);
+    this.attack_direction = this.getAttackDirection(player_pos, mouse_position);
+    const attack_area = this.getAttackArea(player_pos, this.attack_direction, { x: 0, y: 20 });
+    this.attacking = true;
+    setTimeout(() => this.attacking = false, this.ATTACK_TIME);
 
     const enemies = Main.instance().getEnemiesInstance().getEnemies();
     const enemies_in_area = enemies.filter(({ position }) => {
@@ -27,19 +31,32 @@ class Melee extends Weapon {
     this.reload();
   }
 
-  drawAttackArea(attack_area, attack_direction) {
-    const drawer = Canvas.drawer();
+  draw(player_pos, crosshair_pos) {
+    // The draw part needs to be improved!
+    if (this.attacking) return this.drawAttackArea(player_pos, this.attack_direction);
+    super.draw(player_pos, crosshair_pos);
+  }
 
-    // Calculate the center of the attack area for transformation
-    const centerX = (attack_area.x1 + attack_area.x2) / 2;
-    const centerY = (attack_area.y1 + attack_area.y2) / 2;
+  drawAttackArea(player_pos, attack_direction) {
+    const attack_area = this.getAttackArea(player_pos, attack_direction, { x: 0, y: 20 });
+    const drawer = Canvas.drawer();
 
     // Save the current canvas state
     drawer.save();
 
-    // Apply transformations (e.g., rotation, scale)
-    drawer.translate(centerX, centerY); // Move to the center of the rectangle
-    const direction_dict = { top: 0, right: 1, bottom: 2, left: 3 }
+    // translate
+    const directionOffsets = {
+      top: { x: 0, y: -100 },
+      right: { x: 100, y: 0 },
+      bottom: { x: 0, y: 100 },
+      left: { x: -100, y: 0 },
+    };
+
+    const offset = directionOffsets[attack_direction];
+    drawer.translate(offset.x, offset.y);
+
+    // rotate
+    const direction_dict = { top: 0, right: 1, bottom: 2, left: 3 };
     const rotation_angle = (90 * direction_dict[attack_direction]) * (Math.PI / 180);
     drawer.rotate(rotation_angle);
 
@@ -47,18 +64,13 @@ class Melee extends Weapon {
     const width = attack_area.x2 - attack_area.x1;
     const height = attack_area.y2 - attack_area.y1;
 
-    // for(let curr_sprite = 1; curr_sprite <= this.total_sprites; curr_sprite += 1) {
-    //   const image = new Image();
-    //   image.src = `../../assets/weapons/${this.name}/${this.name}_animation/${curr_sprite}.png`;
-    //   drawer.drawImage(image, -width / 2, -height / 2, width, height);
-    // }
-
-    drawer.fillStyle = "rgb(255, 255, 255)";
-    drawer.fillRect(-width / 2, -height / 2, width, height); // Centered rectangle
+    const image = new Image();
+    image.src = `../../assets/weapons/${this.name}/${this.name}_hit.png`;
+    drawer.drawImage(image, -width / 2, -height / 2, width, height);
 
     // Restore the canvas state
     drawer.restore();
-  }
+}
 
   getAttackArea(player_pos, attack_direction, offset = { x: 0, y: 0 }) {
     const attack_size = { x: 350, y: 220 }; // Adjust the size as needed
