@@ -8,7 +8,7 @@ class Knife extends Melee {
       size: { x: 100, y: 100 },
       distance: { x: 40, y: -35 },
       reload_time: 200,
-      total_sprites: 6
+      total_sprites: 5
     })
   }
 }

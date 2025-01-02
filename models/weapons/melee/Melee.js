@@ -8,6 +8,7 @@ class Melee extends Weapon {
   constructor({ name, image, total_sprites, size, distance, reload_time }) {
     super({ name, image, size, reload_time, distance, type: 'melee' });
     this.attacking = false;
+    this.attack_started_time = null;
     this.total_sprites = total_sprites;
   }
 
@@ -17,6 +18,7 @@ class Melee extends Weapon {
     this.attack_direction = this.getAttackDirection(player_pos, mouse_position);
     const attack_area = this.getAttackArea(player_pos, this.attack_direction, { x: 0, y: 20 });
     this.attacking = true;
+    this.attack_started_time = Date.now();
     setTimeout(() => this.attacking = false, this.ATTACK_TIME);
 
     const enemies = Main.instance().getEnemiesInstance().getEnemies();
@@ -46,10 +48,10 @@ class Melee extends Weapon {
 
     // translate
     const directionOffsets = {
-      top: { x: 0, y: -100 },
-      right: { x: 100, y: 0 },
-      bottom: { x: 0, y: 100 },
-      left: { x: -100, y: 0 },
+      top: { x: 0, y: -80 },
+      right: { x: 80, y: 50 },
+      bottom: { x: 0, y: 120 },
+      left: { x: -80, y: 0 },
     };
 
     const offset = directionOffsets[attack_direction];
@@ -65,7 +67,10 @@ class Melee extends Weapon {
     const height = attack_area.y2 - attack_area.y1;
 
     const image = new Image();
-    image.src = `../../assets/weapons/${this.name}/${this.name}_hit.png`;
+    const diff_in_sec = Date.now() - this.attack_started_time;
+    const image_number = Math.ceil((this.total_sprites * diff_in_sec) / this.ATTACK_TIME);
+
+    image.src = `../../assets/weapons/${this.name}/${this.name}_hit/${this.name}_hit${image_number}.png`;
     drawer.drawImage(image, -width / 2, -height / 2, width, height);
 
     // Restore the canvas state
@@ -73,7 +78,7 @@ class Melee extends Weapon {
 }
 
   getAttackArea(player_pos, attack_direction, offset = { x: 0, y: 0 }) {
-    const attack_size = { x: 350, y: 220 }; // Adjust the size as needed
+    const attack_size = { x: 350, y: 350 }; // Adjust the size as needed
     let attack_area;
   
     switch (attack_direction) {
