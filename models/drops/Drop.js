@@ -1,4 +1,6 @@
 import Canvas from "../config/Canvas.js";
+import GameEvents from '../config/GameEvents.js';
+import Main from "../Main.js";
 
 class Drop {
   MAX_TIME_ON_SCREEN = 10000
@@ -17,10 +19,22 @@ class Drop {
 
     const image = new Image();
     image.src = this.image;
-    drawer.drawImage(image, this.position.x, this.position.y, this.size, this.size);
+    drawer.drawImage(image, this.position.x, this.position.y, this.size.x, this.size.y);
   }
 
-  update() {}
+  update() {
+    this.checkPlayerCollision();
+    return this;
+  }
+
+  checkPlayerCollision(action) {
+    const player = Main.instance().getPlayerInstance();
+
+    if (GameEvents.checkCollision(player, this)) {
+      action();
+      this.visible = false;
+    }
+  }
 
   isVisible() {
     return this.visible;
