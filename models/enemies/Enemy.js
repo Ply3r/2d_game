@@ -15,6 +15,7 @@ class Enemy {
     this.total_sprites = total_sprites;
     this.curr_sprite = 0;
     this.direction = 1;
+    this.frame_counter = 0;
     this.invencible = false;
   }
 
@@ -37,8 +38,14 @@ class Enemy {
     drawer.filter = "none";
     drawer.restore();
 
-    this.curr_sprite += 1;
-    if (this.curr_sprite > this.total_sprites) this.curr_sprite = 0;
+    const sprite_speed = Math.max(1, Math.floor(10 / this.speed)); 
+    this.frame_counter++;
+
+    if (this.frame_counter >= sprite_speed) {
+      this.curr_sprite += 1;
+      if (this.curr_sprite >= this.total_sprites) this.curr_sprite = 0;
+      this.frame_counter = 0; // Reset the counter
+    }
   }
 
   getHit() {

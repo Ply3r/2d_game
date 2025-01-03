@@ -5,7 +5,7 @@ class StandardZombie extends Enemy {
     super({
       life: 3,
       strength: 2,
-      speed: 5,
+      speed: 3,
       size: { x: 120, y: 120 },
       position: position,
       name: 'standard_zombie',
