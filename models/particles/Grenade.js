@@ -37,10 +37,7 @@ class Grenade extends Particle {
     const delta = Date.now() - this.start;
     const progress = Math.min(delta / this.duration, 1)
 
-    if (progress === 1) {
-      
-      return this.visible = false;
-    }
+    if (progress === 1) return this.visible = false;
 
     const control_pos = { x: (this.end_pos.x) / 2, y: Math.min(0, this.end_pos.y) };
     const direction = this.end_pos.x > this.start_pos.x ? 1 : -1;

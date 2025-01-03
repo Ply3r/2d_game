@@ -1,6 +1,7 @@
 import Throable from "./Throable.js";
 import Main from "../../Main.js";
 import GrenadeParticle from "../../particles/Grenade.js";
+import Explosion from "../../particles/Explosion.js";
 
 class Grenade extends Throable {
   constructor() {
@@ -17,9 +18,16 @@ class Grenade extends Throable {
   }
 
   attack(player_pos, mouse_position) {
+    const mouse_position_now = { ...mouse_position };
     const itemUpdater = Main.instance().getItemUpdaterInstance();
-    itemUpdater.create(new GrenadeParticle({ start_pos: player_pos, end_pos: mouse_position, speed: this.speed, size: this.size, duration: this.duration }));
-    super.attack(player_pos, mouse_position);
+    itemUpdater.create(new GrenadeParticle({ start_pos: player_pos, end_pos: mouse_position, speed: this.speed, size: this.size, duration: this.duration, impact_size: this.impact_size }));
+
+    setTimeout(() => {
+      const pos = { x: mouse_position_now.x - (this.impact_size.x / 2), y: mouse_position_now.y - (this.impact_size.y / 2) };
+      itemUpdater.create(new Explosion({ start_pos: pos, end_pos: pos, speed: 0, size: this.impact_size, duration: 500 })) 
+    }, this.duration);
+
+    super.attack(player_pos, mouse_position_now);
   }
 }
 
