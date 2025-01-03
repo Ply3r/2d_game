@@ -2,33 +2,16 @@ import Particle from "./Particle.js";
 import GameEvents from "../config/GameEvents.js";
 import Main from "../Main.js";
 
-class Grenade extends Particle {
+class Explosion extends Particle {
   constructor({ start_pos, end_pos, speed, size, duration }) {
-    super({ start_pos, end_pos, speed, size, image: '../../assets/weapons/Throable/grenade/grenade.png' });
+    super({ start_pos, end_pos, speed, size, image: '../../assets/weapons/Throable/grenade/explosion.png' });
     this.start = null;
     this.duration = duration;
   }
 
   update() {
     super.update();
-    this.checkColitionWithEnemies();
-
     return this;
-  }
-
-  checkColitionWithEnemies() {
-    const enemies = Main.instance().getEnemiesInstance().getEnemies();
-
-    enemies.forEach((enemy) => {
-      if (enemy.attributes().invencible) return;
-
-      const colision = GameEvents.checkCollision(this, enemy);
-
-      if (colision) {
-        enemy.getHit();
-        this.visible = false;
-      }
-    })
   }
 
   updatePosition() {

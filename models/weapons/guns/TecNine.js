@@ -2,7 +2,8 @@ import Gun from "./Gun.js";
 
 class TecNine extends Gun {
   constructor() {
-    super({ 
+    super({
+      name: 'tec_nine',
       magazine_size: 20, 
       total_ammunition: 40, 
       image: '../../assets/weapons/gun/tec_9.png', 
