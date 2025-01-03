@@ -15,16 +15,20 @@ class InGame {
 
   drawInventory() {
     const { inventory } = this.player.attributes();
+    let inventory_array = Object.values(inventory);
+    inventory_array.splice(this.player.curr_item - 1, 1);
+    inventory_array = [inventory[this.player.curr_item], ...inventory_array]
 
-    inventory.forEach((item, index) => {
-      const weapon_attributes = item.attributes();
+    inventory_array.forEach((item, index) => {
+      const weapon_attributes = item && item.attributes();
 
       // Gun Image
       this.drawer.setTransform(1, 0, 0, 1, 0, 0);
-      this.drawer.fillStyle = weapon_attributes.reloading || 
-                        (weapon_attributes.total_ammunition === 0 && weapon_attributes.using_ammunition === 0) 
-                        ? "rgb(255, 0, 0)" : "rgb(255, 255, 255)";
+      this.drawer.fillStyle = "rgb(255, 255, 255)"
 
+      if (weapon_attributes && (weapon_attributes.reloading || (weapon_attributes.total_ammunition === 0 && weapon_attributes.using_ammunition === 0))) {
+        this.drawer.fillStyle = "rgb(255, 0, 0)"
+      }
 
       const height_diff = 120 * index;
       const size_diff = index ? 30 : 0;
@@ -32,6 +36,8 @@ class InGame {
 
       this.drawer.fillRect(window.innerWidth - 250 + position_diff, 20 + height_diff, 200 - size_diff, 100 - size_diff);
       this.drawer.clearRect(window.innerWidth - 245 + position_diff, 25 + height_diff, 190 - size_diff, 90 - size_diff);
+
+      if (!item) return;
 
       const gun_img = new Image();
       gun_img.src = weapon_attributes.image;
