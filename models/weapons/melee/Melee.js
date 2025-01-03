@@ -73,7 +73,7 @@ class Melee extends Weapon {
     image_number = image_number > this.total_sprites ? this.total_sprites : image_number;
     image_number = image_number === 0 ? 1 : image_number;
 
-    image.src = `../../assets/weapons/${this.name}/${this.name}_hit/${this.name}_hit${image_number}.png`;
+    image.src = `../../assets/weapons/melee/${this.name}/${this.name}_hit/${this.name}_hit${image_number}.png`;
     drawer.drawImage(image, -width / 2, -height / 2, width, height);
 
     // Restore the canvas state

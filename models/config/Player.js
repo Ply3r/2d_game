@@ -20,6 +20,12 @@ class Player {
     Canvas.addListener('click', () => this.attack());
   }
 
+  addItem(item) {
+    let empty_slot = Object.values(this.inventory).findIndex((item) => !item) + 1;
+    if (!empty_slot) empty_slot = this.curr_item;
+    this.inventory[empty_slot] = item;
+  }
+
   reset() {
     this.position = { x: Math.floor(window.innerWidth / 2), y: Math.floor(window.innerHeight / 2) };
     this.inventory = { 1: GameEvents.randomGun(), 2: GameEvents.randomMelee(), 3: null, 4: null };
