@@ -30,7 +30,7 @@ class Weapon {
     drawer.drawImage(img, -40 + this.distance.x, -half + this.distance.y, this.size.x, this.size.y);
   }
 
-  attack(player_pos, mouse_position) {}
+  attack(_player_pos, _mouse_position) {}
 
   reload() {
     if (this.reloading) return;

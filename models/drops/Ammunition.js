@@ -8,7 +8,7 @@ class Ammunition extends Drop {
 
   addAmmo() {
     const player = Main.instance().getPlayerInstance();
-    const weapon = player.attributes().inventory[0];
+    const weapon = player.inventory[player.curr_item];
 
     if (weapon.getType() === 'gun') {
       const options = [10, 15, 30, 40];
