@@ -8,13 +8,15 @@ class Ammunition extends Drop {
 
   addAmmo() {
     const player = Main.instance().getPlayerInstance();
-    const weapon = player.inventory[player.curr_item];
+    let weapon = player.inventory[player.curr_item];
 
-    if (weapon.getType() === 'gun') {
-      const options = [10, 15, 30, 40];
-      const random_option = Math.floor(Math.random() * options.length)
-      weapon.getAmmunition(options[random_option]);
+    if (weapon.getType() !== 'gun') {
+      weapon = player.inventory[1];
     }
+
+    const options = [10, 15, 30, 40];
+    const random_option = Math.floor(Math.random() * options.length)
+    weapon.getAmmunition(options[random_option]);
   }
 
   checkPlayerCollision() {
