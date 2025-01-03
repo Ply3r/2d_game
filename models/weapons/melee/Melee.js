@@ -8,6 +8,7 @@ class Melee extends Weapon {
   constructor({ name, image, total_sprites, size, distance, reload_time }) {
     super({ name, image, size, reload_time, distance, type: 'melee' });
     this.attacking = false;
+    this.attack_direction = null;
     this.attack_started_time = null;
     this.total_sprites = total_sprites;
   }
@@ -68,7 +69,9 @@ class Melee extends Weapon {
 
     const image = new Image();
     const diff_in_sec = Date.now() - this.attack_started_time;
-    const image_number = Math.ceil((this.total_sprites * diff_in_sec) / this.ATTACK_TIME);
+    let image_number = Math.ceil((this.total_sprites * diff_in_sec) / this.ATTACK_TIME);
+    image_number = image_number > this.total_sprites ? this.total_sprites : image_number;
+    image_number = image_number === 0 ? 1 : image_number;
 
     image.src = `../../assets/weapons/${this.name}/${this.name}_hit/${this.name}_hit${image_number}.png`;
     drawer.drawImage(image, -width / 2, -height / 2, width, height);
