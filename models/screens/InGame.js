@@ -7,7 +7,6 @@ class InGame {
     this.player = Main.instance().getPlayerInstance();
     this.drawer = Canvas.drawer();
 
-
     this.drawCrosshair();
     this.drawInventory();
     this.drawStatusBar();

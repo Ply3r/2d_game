@@ -62,7 +62,7 @@ class Main {
     if (this.gameRunning) return;
 
     Controls.addEventListeners();
-    this.enemiesSpawnRateInterval = GameEvents.createEnemies();
+    // this.enemiesSpawnRateInterval = GameEvents.createEnemies();
     document.body.style.cursor = 'none';
     this.resetGame();
   }

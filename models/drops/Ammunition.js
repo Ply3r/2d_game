@@ -3,7 +3,7 @@ import Drop from "./Drop.js";
 
 class Ammunition extends Drop {
   constructor(position) {
-    super({ position: position, size: { x: 50, y: 50 }, image: '../../assets/ammunition.png' });
+    super({ position: position, size: { x: 50, y: 50 }, image: '../../assets/drops/ammunition.png' });
   }
 
   addAmmo() {
