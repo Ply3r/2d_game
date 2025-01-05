@@ -5,8 +5,8 @@ import Main from "../../Main.js";
 class Throable extends Weapon {
   IMPACT_TIME = 500;
 
-  constructor({ name, image, size, type, speed, impact_image, impact_size, distance, duration }) {
-    super({ name, image, size, type, distance });
+  constructor({ strength, name, image, size, type, speed, impact_image, impact_size, distance, duration }) {
+    super({ strength, name, image, size, type, distance });
     this.speed = speed;
     this.current_pos = null;
     this.duration = duration;
@@ -16,7 +16,28 @@ class Throable extends Weapon {
 
   attack(_player_pos, _mouse_position) {
     const player = Main.instance().getPlayerInstance();
-    player.inventory[player.curr_item] = null;
+    // player.inventory[player.curr_item] = null;
+  }
+
+  explode(position) {
+    const enemies = Main.instance().getEnemiesInstance().getEnemies();
+    const enemies_in_area = enemies.filter(({ position: enemy_position }) => {
+      return this.checkIfInAttackArea(enemy_position, position)
+    });
+
+    enemies_in_area.forEach((enemy) => enemy.getHit(this.strength));
+
+    const player = Main.instance().getPlayerInstance();
+    if (this.checkIfInAttackArea(player.position, position)) {
+      player.getHit(this.strength)
+    }
+  }
+
+  checkIfInAttackArea(enemy_position, position) {
+    return enemy_position.x >= position.x - (this.impact_size.x / 2) &&
+           enemy_position.x <= position.x + (this.impact_size.x / 2) &&
+           enemy_position.y >= position.y - (this.impact_size.y / 2) &&
+           enemy_position.y <= position.y + (this.impact_size.y / 2);
   }
 
   draw(player_pos, crosshair_pos) {

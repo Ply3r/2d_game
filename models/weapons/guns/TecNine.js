@@ -11,6 +11,7 @@ class TecNine extends Gun {
       automatic: false,
       distance: { x: 50, y: 0 },
       reload_time: 1000,
+      strength: 1
     })
   }
 }

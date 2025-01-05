@@ -11,6 +11,7 @@ class TommyGun extends Gun {
       automatic: true,
       bullet_time: 200,
       reload_time: 2000,
+      strength: 2,
     })
   }
 }

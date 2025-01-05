@@ -13,7 +13,8 @@ class Grenade extends Throable {
       impact_size: { x: 500, y: 500 },
       size: { x: 50, y: 50 },
       distance: { x: 50, y: 0 },
-      duration: 1000
+      duration: 1000,
+      strength: 4,
     })
   }
 
@@ -24,7 +25,8 @@ class Grenade extends Throable {
 
     setTimeout(() => {
       const pos = { x: mouse_position_now.x - (this.impact_size.x / 2), y: mouse_position_now.y - (this.impact_size.y / 2) };
-      itemUpdater.create(new Explosion({ start_pos: pos, end_pos: pos, speed: 0, size: this.impact_size, duration: 500 })) 
+      itemUpdater.create(new Explosion({ start_pos: pos, end_pos: pos, speed: 0, size: this.impact_size, duration: 500 }))
+      this.explode(mouse_position_now);
     }, this.duration);
 
     super.attack(player_pos, mouse_position_now);

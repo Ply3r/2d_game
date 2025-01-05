@@ -45,9 +45,9 @@ class Main {
         lastFrameTime = currentTime;
 
         Canvas.draw([
-          this.itemUpdater,
           this.player,
           this.enemies,
+          this.itemUpdater,
           this.inGame,
         ]);
       }
@@ -62,7 +62,7 @@ class Main {
     if (this.gameRunning) return;
 
     Controls.addEventListeners();
-    // this.enemiesSpawnRateInterval = GameEvents.createEnemies();
+    this.enemiesSpawnRateInterval = GameEvents.createEnemies();
     document.body.style.cursor = 'none';
     this.resetGame();
   }

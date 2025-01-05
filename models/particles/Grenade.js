@@ -11,24 +11,7 @@ class Grenade extends Particle {
 
   update() {
     super.update();
-    this.checkColitionWithEnemies();
-
     return this;
-  }
-
-  checkColitionWithEnemies() {
-    const enemies = Main.instance().getEnemiesInstance().getEnemies();
-
-    enemies.forEach((enemy) => {
-      if (enemy.attributes().invencible) return;
-
-      const colision = GameEvents.checkCollision(this, enemy);
-
-      if (colision) {
-        enemy.getHit();
-        this.visible = false;
-      }
-    })
   }
 
   updatePosition() {

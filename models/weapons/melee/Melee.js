@@ -5,8 +5,8 @@ import Main from "../../Main.js";
 class Melee extends Weapon {
   ATTACK_TIME = 100
 
-  constructor({ name, image, total_sprites, size, distance, reload_time }) {
-    super({ name, image, size, reload_time, distance, type: 'melee' });
+  constructor({ strength, name, image, total_sprites, size, distance, reload_time }) {
+    super({ strength, name, image, size, reload_time, distance, type: 'melee' });
     this.attacking = false;
     this.attack_direction = null;
     this.attack_started_time = null;
@@ -30,7 +30,7 @@ class Melee extends Weapon {
              position.y <= attack_area.y2;
     });
 
-    enemies_in_area.forEach((enemy) => enemy.getHit());
+    enemies_in_area.forEach((enemy) => enemy.getHit(this.strength));
     this.reload();
   }
 
