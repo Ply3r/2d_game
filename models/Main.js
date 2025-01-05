@@ -45,9 +45,9 @@ class Main {
         lastFrameTime = currentTime;
 
         Canvas.draw([
-          this.itemUpdater,
           this.player,
           this.enemies,
+          this.itemUpdater,
           this.inGame,
         ]);
       }

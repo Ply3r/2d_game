@@ -4,9 +4,10 @@ import GameEvents from "../config/GameEvents.js";
 import Main from "../Main.js";
 
 class Bullet extends Particle {
-  constructor({ start_pos, end_pos }) {
+  constructor({ start_pos, end_pos, strength }) {
     const final_position = Bullet.getBulletFinalPosition(start_pos, end_pos);
     super({ start_pos, end_pos: final_position, speed: 50, size: { x: 10, y: 10 } });
+    this.strength = strength;
   }
 
   draw() {
@@ -65,7 +66,7 @@ class Bullet extends Particle {
       const colision = GameEvents.checkCollision(this, enemy);
 
       if (colision) {
-        enemy.getHit();
+        enemy.getHit(this.strength);
         this.visible = false;
       }
     })

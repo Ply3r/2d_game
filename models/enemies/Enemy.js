@@ -48,8 +48,8 @@ class Enemy {
     }
   }
 
-  getHit() {
-    this.life -= 1;
+  getHit(strength) {
+    this.life -= strength;
     this.invencible = true;
 
     setTimeout(() => this.invencible = false, this.INVENCIBLE_TIME_AFTER_HIT)

@@ -20,9 +20,15 @@ class Player {
     Canvas.addListener('click', () => this.attack());
   }
 
+  addItem(item) {
+    let empty_slot = Object.values(this.inventory).findIndex((item) => !item) + 1;
+    if (!empty_slot) empty_slot = this.curr_item;
+    this.inventory[empty_slot] = item;
+  }
+
   reset() {
     this.position = { x: Math.floor(window.innerWidth / 2), y: Math.floor(window.innerHeight / 2) };
-    this.inventory = { 1: GameEvents.randomGun(), 2: GameEvents.randomMelee(), 3: null, 4: null };
+    this.inventory = { 1: GameEvents.randomWeapon('gun'), 2: GameEvents.randomWeapon('melee'), 3: GameEvents.randomWeapon('throable'), 4: null };
     this.curr_item = 1;
     this.current_sprite = 0;
     this.life = this.PLAYER_TOTAL_LIFE;
@@ -104,6 +110,7 @@ class Player {
   }
 
   automaticAttack() {
+    if (!this.inventory[this.curr_item]) return;
     const weapon_attributes = this.inventory[this.curr_item].attributes();
 
     if (weapon_attributes.automatic) {
@@ -115,6 +122,7 @@ class Player {
   }
 
   attack() {
+    if (!this.inventory[this.curr_item]) return;
     this.inventory[this.curr_item].attack(this.position, Controls.getMousePosition());
   }
 

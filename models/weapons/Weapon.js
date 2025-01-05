@@ -1,14 +1,14 @@
 import Canvas from "../config/Canvas.js";
 
 class Weapon {
-  constructor({ name, image, size, reload_time, use_ammunition, type, distance = { x: 0, y: 0 } }) {
+  constructor({ name, image, size, reload_time, type, strength, distance = { x: 0, y: 0 } }) {
     this.name = name;
     this.image = image;
     this.size = size;
-    this.use_ammunition = use_ammunition;
     this.reload_time = reload_time;
     this.distance = distance;
     this.type = type;
+    this.strength = strength;
     this.reloading = false;
     this.reload_start_time = null;
   }
