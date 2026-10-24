@@ -37,13 +37,17 @@ class Waves {
     return Math.min(0.5, 0.08 * (wave - 1));
   }
 
+  // Devolve 'cleared' no tick em que a ultima horda termina (todos os inimigos mortos).
   update(enemies) {
     if (this.state === 'intermission') return this.updateIntermission();
 
     const alive = enemies.getEnemies().filter((enemy) => enemy.isVisible() && enemy.life > 0).length;
 
     if (this.remaining === 0) {
-      if (alive === 0) this.startIntermission();
+      if (alive === 0) {
+        this.startIntermission();
+        return 'cleared';
+      }
       return;
     }
 

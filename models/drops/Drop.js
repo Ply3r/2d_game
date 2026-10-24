@@ -31,7 +31,7 @@ class Drop {
     const player = Main.instance().getPlayerInstance();
 
     if (GameEvents.checkCollision(player, this)) {
-      action();
+      action.call(this);
       this.visible = false;
     }
   }
