@@ -1,4 +1,4 @@
-import './helpers/env.js';
+import { record } from './helpers/env.js';
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -225,5 +225,36 @@ describe('carregar o mapa', () => {
     const second = new GameMap();
     try { await second.load(); } finally { restore(); }
     assert.equal(second.data.objects.length, 0);
+  });
+});
+
+describe('mapa nas telas de menu e game over', () => {
+  const main = Main.instance();
+  const map = main.getMapInstance();
+
+  const frames = async (game_over) => {
+    let loop;
+    globalThis.requestAnimationFrame = (fn) => { loop = fn; };
+    globalThis.performance = { now: () => 1000 };
+    main.gameRunning = false;
+    main.gameOver = game_over;
+    main.screen = null;
+    main.screenInstance = null;
+    map.setData({ objects: [obj('crate_wood', 0.5, 0.5), obj('bush', 0.2, 0.2)] });
+    main.start();
+    return record(() => loop(1000));
+  };
+
+  it('o menu mostra o mapa por tras do texto', async () => {
+    const calls = await frames(false);
+    const images = calls.filter((c) => c[0] === 'drawImage');
+    assert.equal(images.length, 2);
+    assert.ok(images.some((c) => c[2] === 608 && c[3] === 328 && c[4] === 64), 'caixa na posicao do mapa');
+    assert.ok(calls.findIndex((c) => c[0] === 'fillText') > calls.findIndex((c) => c[0] === 'drawImage'), 'texto por cima');
+  });
+
+  it('o game over tambem mostra o mapa', async () => {
+    const calls = await frames(true);
+    assert.equal(calls.filter((c) => c[0] === 'drawImage').length, 2);
   });
 });

@@ -62,8 +62,11 @@ class Main {
 
         if (this.screen !== screen) {
           this.screen = screen;
-          this.gameOver ? new GameOver() : new Menu();
+          this.screenInstance = this.gameOver ? new GameOver() : new Menu();
         }
+
+        // Redesenha todo quadro: o mapa e as imagens carregam depois do primeiro desenho.
+        this.screenInstance.draw();
 
         lastFrameTime = currentTime;
         accumulated = 0;

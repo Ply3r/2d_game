@@ -27,6 +27,8 @@ class Menu {
 
     drawer.setTransform(1, 0, 0, 1, 0, 0);
     drawer.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    this.main.getMapInstance().draw();
+    drawer.setTransform(1, 0, 0, 1, 0, 0);
     document.body.style.cursor = 'auto'
     drawer.fillStyle ="rgb(255, 255, 255)" 
     drawer.font = "36px Pixelify Sans";
