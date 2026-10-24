@@ -84,7 +84,7 @@ class Main {
 
       requestAnimationFrame(gameLoop);
     }
-    
+
     gameLoop(performance.now());
   }
 

@@ -31,7 +31,7 @@ class Player {
 
   reset() {
     this.position = { x: Math.floor(window.innerWidth / 2), y: Math.floor(window.innerHeight / 2) };
-    this.inventory = { 1: GameEvents.randomWeapon('gun'), 2: GameEvents.randomWeapon('melee'), 3: GameEvents.randomWeapon('throable'), 4: null };
+    this.inventory = { 1: GameEvents.randomWeapon('gun'), 2: null, 3: null, 4: null };
     this.curr_item = 1;
     this.current_sprite = 0;
     this.sprite_ticks = 0;
