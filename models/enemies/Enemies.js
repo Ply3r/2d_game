@@ -45,7 +45,6 @@ class Enemies {
 
   draw() {
     this.enemies_array.forEach((enemy) => enemy.draw());
-    this.update();
   }
 
   update() {

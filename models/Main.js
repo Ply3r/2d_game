@@ -31,9 +31,19 @@ class Main {
     return instance;
   }
 
+  // Um tick de logica: a velocidade do jogo e medida em ticks (this.fps por segundo),
+  // independente da taxa de atualizacao do monitor.
+  update() {
+    this.player.update();
+    this.enemies.update();
+    this.itemUpdater.update();
+  }
+
   start() {
-    const frameDuration = 1000 / this.fps;
+    const tickDuration = 1000 / this.fps;
+    const MAX_TICKS_PER_FRAME = 5; // evita a "espiral da morte" apos o jogo ficar em segundo plano
     let lastFrameTime = performance.now();
+    let accumulated = 0;
 
     const gameLoop = (currentTime) => {
       if (!this.gameRunning) {
@@ -45,21 +55,33 @@ class Main {
           this.gameOver ? new GameOver() : new Menu();
         }
 
+        lastFrameTime = currentTime;
+        accumulated = 0;
         return requestAnimationFrame(gameLoop);
       }
-    
-      const deltaTime = currentTime - lastFrameTime;
-      if (deltaTime >= frameDuration) {
-        lastFrameTime = currentTime;
 
-        Canvas.draw([
-          this.player,
-          this.enemies,
-          this.itemUpdater,
-          this.inGame,
-        ]);
+      accumulated += currentTime - lastFrameTime;
+      lastFrameTime = currentTime;
+
+      let ticks = 0;
+      while (accumulated >= tickDuration && this.gameRunning) {
+        if (ticks === MAX_TICKS_PER_FRAME) {
+          accumulated = 0;
+          break;
+        }
+
+        this.update();
+        accumulated -= tickDuration;
+        ticks += 1;
       }
-      
+
+      Canvas.draw([
+        this.player,
+        this.enemies,
+        this.itemUpdater,
+        this.inGame,
+      ]);
+
       requestAnimationFrame(gameLoop);
     }
     

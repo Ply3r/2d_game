@@ -1,4 +1,5 @@
 import Canvas from "../config/Canvas.js";
+import Images from "../config/Images.js";
 import GameEvents from "../config/GameEvents.js";
 
 class Particle {
@@ -19,8 +20,7 @@ class Particle {
   draw() {
     const drawer = Canvas.drawer();
 
-    const image = new Image();
-    image.src = this.image;
+    const image = Images.get(this.image);
     drawer.drawImage(image, this.curr_pos.x, this.curr_pos.y, this.size.x, this.size.y);
   }
 

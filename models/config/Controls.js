@@ -18,12 +18,21 @@ class Controls {
     return mouse_position;
   }
 
+  // Minusculas para que Shift/Caps Lock nao troquem 'w' por 'W' entre o keydown e o keyup.
   static keyDown(event) {
-    holding_keys.push(event.key);
+    const key = event.key.toLowerCase();
+    if (!holding_keys.includes(key)) holding_keys.push(key);
   }
 
   static keyUp(event) {
-    holding_keys = holding_keys.filter((key) => key != event.key);
+    const key = event.key.toLowerCase();
+    holding_keys = holding_keys.filter((held) => held != key);
+  }
+
+  // Ao perder o foco o navegador nao envia keyup/mouseup, e as teclas ficariam presas.
+  static releaseAll() {
+    holding_keys = [];
+    holding_click = false;
   }
 
   static mouseMove(event) {
@@ -49,6 +58,7 @@ class Controls {
     Canvas.addListener('mousedown', () => Controls.mouseDown())
     Canvas.addListener('mouseup', () => Controls.mouseUp())
     Canvas.addListener('mouseout', () => Controls.mouseUp())
+    window.addEventListener('blur', () => Controls.releaseAll())
   }
 }
 

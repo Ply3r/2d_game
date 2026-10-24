@@ -1,5 +1,6 @@
 import Weapon from "../Weapon.js";
 import Canvas from '../../config/Canvas.js';
+import Images from "../../config/Images.js";
 import Main from "../../Main.js";
 
 class Melee extends Weapon {
@@ -67,13 +68,12 @@ class Melee extends Weapon {
     const width = attack_area.x2 - attack_area.x1;
     const height = attack_area.y2 - attack_area.y1;
 
-    const image = new Image();
     const diff_in_sec = Date.now() - this.attack_started_time;
     let image_number = Math.ceil((this.total_sprites * diff_in_sec) / this.ATTACK_TIME);
     image_number = image_number > this.total_sprites ? this.total_sprites : image_number;
     image_number = image_number === 0 ? 1 : image_number;
 
-    image.src = `../../assets/weapons/melee/${this.name}/${this.name}_hit/${this.name}_hit${image_number}.png`;
+    const image = Images.get(`../../assets/weapons/melee/${this.name}/${this.name}_hit/${this.name}_hit${image_number}.png`);
     drawer.drawImage(image, -width / 2, -height / 2, width, height);
 
     // Restore the canvas state

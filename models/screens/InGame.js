@@ -1,4 +1,5 @@
 import Canvas from "../config/Canvas.js";
+import Images from "../config/Images.js";
 import Controls from "../config/Controls.js";
 import Main from "../Main.js";
 
@@ -38,8 +39,7 @@ class InGame {
 
       if (!item) return;
 
-      const gun_img = new Image();
-      gun_img.src = weapon_attributes.image;
+      const gun_img = Images.get(weapon_attributes.image);
       this.drawer.drawImage(gun_img, window.innerWidth - 245 + position_diff, 25 + height_diff, 190 - size_diff, 90 - size_diff);
 
       // Reloading Animation
@@ -60,8 +60,7 @@ class InGame {
 
   drawCrosshair() {
     const mouse_position = Controls.getMousePosition();
-    const crosshair_img = new Image();
-    crosshair_img.src = './assets/crosshair.png';
+    const crosshair_img = Images.get('./assets/crosshair.png');
     this.drawer.setTransform(1, 0, 0, 1, mouse_position.x, mouse_position.y);
     this.drawer.drawImage(crosshair_img, 0, 0, 25, 25);
   }

@@ -1,4 +1,5 @@
 import Canvas from "../config/Canvas.js";
+import Images from "../config/Images.js";
 import GameEvents from "../config/GameEvents.js";
 import Main from "../Main.js";
 
@@ -22,8 +23,7 @@ class Enemy {
   draw() {
     const drawer = Canvas.drawer();
 
-    const image = new Image();
-    image.src = `../../assets/enemies/${this.name}/${this.curr_sprite}.gif`;
+    const image = Images.get(`../../assets/enemies/${this.name}/${this.curr_sprite}.gif`);
 
     drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
     drawer.scale(this.direction, 1);
@@ -37,7 +37,9 @@ class Enemy {
     drawer.drawImage(image, x_position, 0, this.size.x, this.size.y);
     drawer.filter = "none";
     drawer.restore();
+  }
 
+  updateSprite() {
     const sprite_speed = Math.max(1, Math.floor(10 / this.speed)); 
     this.frame_counter++;
 
@@ -56,6 +58,7 @@ class Enemy {
   }
 
   update() {
+    this.updateSprite();
     this.move();
     if (this.invencible) this.takingHit();
     this.checkCollisionWithPlayer();
