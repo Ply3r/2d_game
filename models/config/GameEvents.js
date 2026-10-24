@@ -22,14 +22,6 @@ class GameEvents {
     return new types[type][random_index]();
   }
 
-  static createEnemies() {
-    const ENEMY_SPAWN_RATE = 1000;
-
-    return setInterval(() => {
-      Main.instance().getEnemiesInstance().create();
-    }, ENEMY_SPAWN_RATE)
-  }
-
   // Cada elemento que colide expoe hitbox() = { x, y, w, h } (canto superior esquerdo, absoluto).
   static checkCollision(first_element, second_element) {
     return GameEvents.rectsOverlap(first_element.hitbox(), second_element.hitbox());

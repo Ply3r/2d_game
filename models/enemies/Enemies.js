@@ -12,8 +12,8 @@ class Enemies {
     this.enemies_array = [];
   }
 
-  create() {
-    const random_enemy = this.possible_options[Math.floor(Math.random() * this.possible_options.length)];
+  create(enemy_type = null) {
+    const random_enemy = enemy_type || this.possible_options[Math.floor(Math.random() * this.possible_options.length)];
 
     const randomPositions = () => {
       const side = Math.floor(Math.random() * 4); // 0 = top, 1 = right, 2 = bottom, 3 = left

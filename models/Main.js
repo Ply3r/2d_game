@@ -1,9 +1,9 @@
 import InGame from "./screens/InGame.js";
 import Player from "./config/Player.js";
 import Enemies from "./enemies/Enemies.js";
+import Waves from "./config/Waves.js";
 import ItemUpdater from "./config/ItemUpdater.js";
 import Controls from "./config/Controls.js";
-import GameEvents from "./config/GameEvents.js";
 import Canvas from "./config/Canvas.js";
 import Menu from "./screens/Menu.js";
 import GameOver from "./screens/GameOver.js";
@@ -15,6 +15,7 @@ class Main {
     this.player = new Player();
     this.inGame = new InGame();
     this.enemies = new Enemies();
+    this.waves = new Waves();
     this.itemUpdater = new ItemUpdater();
 
     this.gameRunning = false;
@@ -35,6 +36,7 @@ class Main {
   // independente da taxa de atualizacao do monitor.
   update() {
     this.player.update();
+    this.waves.update(this.enemies);
     this.enemies.update();
     this.itemUpdater.update();
   }
@@ -93,7 +95,6 @@ class Main {
 
     this.screen = null;
     Controls.addEventListeners();
-    this.enemiesSpawnRateInterval = GameEvents.createEnemies();
     document.body.style.cursor = 'none';
     this.resetGame();
   }
@@ -101,7 +102,6 @@ class Main {
   finishGame() {
     this.gameOver = true;
     this.gameRunning = false;
-    clearInterval(this.enemiesSpawnRateInterval);
   }
 
   resetGame() {
@@ -109,6 +109,7 @@ class Main {
     this.gameOver = false;
     this.player.reset();
     this.enemies.reset();
+    this.waves.reset();
     this.itemUpdater.reset();
   }
 
@@ -118,6 +119,10 @@ class Main {
 
   getItemUpdaterInstance() {
     return this.itemUpdater;
+  }
+
+  getWavesInstance() {
+    return this.waves;
   }
 
   getEnemiesInstance() {
