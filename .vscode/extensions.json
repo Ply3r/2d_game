@@ -2,6 +2,7 @@
   "recommendations": [
     "esbenp.prettier-vscode",
     "ritwickdey.liveserver",
-    "usernamehw.errorlens"
+    "usernamehw.errorlens",
+    "connor4312.nodejs-testing"
   ]
 }
