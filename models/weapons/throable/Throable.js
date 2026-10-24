@@ -6,8 +6,8 @@ import GameEvents from "../../config/GameEvents.js";
 class Throable extends Weapon {
   IMPACT_TIME = 500;
 
-  constructor({ strength, name, image, size, type, speed, impact_image, impact_size, distance, duration }) {
-    super({ strength, name, image, size, type, distance });
+  constructor({ strength, name, image, size, type, speed, impact_image, impact_size, grip, duration }) {
+    super({ strength, name, image, size, type, grip });
     this.speed = speed;
     this.current_pos = null;
     this.duration = duration;

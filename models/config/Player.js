@@ -5,8 +5,9 @@ import Main from "../Main.js";
 import GameEvents from "./GameEvents.js";
 
 class Player {
-  SPRITE_WIDTH = 16;
-  SPRITE_HEIGHT = 20;
+  SPRITE_SIZE = 80;
+  WALK_FRAMES = 4;
+  TICKS_PER_FRAME = 6;
   PLAYER_SIZE = { x: 80, y: 80 };
   MOVE_SPEED = 8;
   PLAYER_TOTAL_LIFE = 3;
@@ -33,6 +34,7 @@ class Player {
     this.inventory = { 1: GameEvents.randomWeapon('gun'), 2: GameEvents.randomWeapon('melee'), 3: GameEvents.randomWeapon('throable'), 4: null };
     this.curr_item = 1;
     this.current_sprite = 0;
+    this.sprite_ticks = 0;
     this.life = this.PLAYER_TOTAL_LIFE;
     this.invencible = false;
     this.last_hit_time = 0;
@@ -47,7 +49,7 @@ class Player {
     const player_img = Images.get('./assets/player.png');
     const img_pos = this.getImagePosition();
     drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
-    drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, -40, 0, this.PLAYER_SIZE.x, this.PLAYER_SIZE.y)
+    drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_SIZE, this.SPRITE_SIZE, -40, 0, this.PLAYER_SIZE.x, this.PLAYER_SIZE.y)
 
     // weapon
     const weapon = this.inventory[this.curr_item];
@@ -102,11 +104,20 @@ class Player {
     if(holding_keys.includes('d') && this.position.x < window.innerWidth - 40) this.position.x += move_speed;
   }
 
+  // Quadros de caminhada so rodam andando (a cada TICKS_PER_FRAME ticks); parado volta ao quadro 0.
   updateSprite(holding_keys) {
     const move_keys = ['a', 'w', 's', 'd'];
-    if (holding_keys.some((key) => move_keys.includes(key))) {
-      this.current_sprite += 1;
-      if (this.current_sprite >= 3) this.current_sprite = 0;
+
+    if (!holding_keys.some((key) => move_keys.includes(key))) {
+      this.current_sprite = 0;
+      this.sprite_ticks = 0;
+      return;
+    }
+
+    this.sprite_ticks += 1;
+    if (this.sprite_ticks >= this.TICKS_PER_FRAME) {
+      this.sprite_ticks = 0;
+      this.current_sprite = (this.current_sprite + 1) % this.WALK_FRAMES;
     }
   }
 
@@ -141,31 +152,20 @@ class Player {
     }, this.INVENCIBLE_TIME_AFTER_HIT)
   }
 
-  getLastDirection() {
-    const holding_keys = Controls.getHoldingKeys();
-    return holding_keys[holding_keys.length - 1];
+  // O corpo olha na direcao da mira (eixo dominante), a mesma em que a arma aponta.
+  getFacing() {
+    const mouse = Controls.getMousePosition();
+    const dx = mouse.x - this.position.x;
+    const dy = mouse.y - (this.position.y + this.PLAYER_SIZE.y / 2);
+
+    if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'right' : 'left';
+    return dy > 0 ? 'down' : 'up';
   }
 
   getImagePosition() {
-    let yOffSet = null;
+    const rows = { down: 0, left: 1, right: 2, up: 3 };
 
-    switch(this.getLastDirection()) {
-      case 'w':
-        yOffSet = 3
-        break;
-      case 'a':
-        yOffSet = 1
-        break;
-      case 'd':
-        yOffSet = 2
-        break;
-      case 's':
-        yOffSet = 0
-        break;
-    }
-
-    const getPos = (offset, width) => offset * width;
-    return { x: getPos(this.current_sprite, this.SPRITE_WIDTH), y: getPos(yOffSet, this.SPRITE_HEIGHT) }
+    return { x: this.current_sprite * this.SPRITE_SIZE, y: rows[this.getFacing()] * this.SPRITE_SIZE };
   }
 
   increaseEnemiesKilled() {

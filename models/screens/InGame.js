@@ -214,7 +214,7 @@ class InGame {
   drawCrosshair() {
     const mouse_position = Controls.getMousePosition();
     const crosshair_img = Images.get('./assets/crosshair.png');
-    const size = 25;
+    const size = 26;
 
     this.drawer.drawImage(crosshair_img, mouse_position.x - size / 2, mouse_position.y - size / 2, size, size);
   }

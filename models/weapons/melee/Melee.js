@@ -8,8 +8,8 @@ class Melee extends Weapon {
   ATTACK_TIME = 100
   ATTACK_SIZE = { x: 350, y: 350 }
 
-  constructor({ strength, name, image, total_sprites, size, distance, reload_time }) {
-    super({ strength, name, image, size, reload_time, distance, type: 'melee' });
+  constructor({ strength, name, image, total_sprites, size, grip, reload_time }) {
+    super({ strength, name, image, size, reload_time, grip, type: 'melee' });
     this.attacking = false;
     this.attack_direction = null;
     this.attack_started_time = null;

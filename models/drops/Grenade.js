@@ -4,7 +4,7 @@ import GrenadeWeapon from "../weapons/throable/Grenade.js";
 
 class Grenade extends Drop {
   constructor(position) {
-    super({ position: position, size: { x: 50, y: 50 }, image: '../../assets/drops/grenade.png' });
+    super({ position: position, size: { x: 48, y: 48 }, image: '../../assets/drops/grenade.png' });
   }
 
   addItem() {

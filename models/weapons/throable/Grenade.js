@@ -11,8 +11,8 @@ class Grenade extends Throable {
       impact_image: '../../assets/weapons/throable/grenade/explosion.png',
       speed: 25,
       impact_size: { x: 500, y: 500 },
-      size: { x: 50, y: 50 },
-      distance: { x: 50, y: 0 },
+      size: { x: 40, y: 40 },
+      grip: { x: 20, y: 20 },
       duration: 1000,
       strength: 4,
     })

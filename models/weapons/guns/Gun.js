@@ -3,8 +3,8 @@ import Bullet from "../../particles/Bullet.js";
 import Weapon from "../Weapon.js";
 
 class Gun extends Weapon {
-  constructor({ strength, name, magazine_size, total_ammunition, image, distance, size, automatic, bullet_time, reload_time }) {
-    super({ strength, name, image, size, reload_time, distance, type: 'gun' });
+  constructor({ strength, name, magazine_size, total_ammunition, image, grip, muzzle, size, automatic, bullet_time, reload_time }) {
+    super({ strength, name, image, size, reload_time, grip, muzzle, type: 'gun' });
 
     this.magazine_size = magazine_size;
     this.using_ammunition = magazine_size;
@@ -36,7 +36,8 @@ class Gun extends Weapon {
     }
 
     this.using_ammunition -= 1;
-    const position = { x: player_pos.x, y: player_pos.y + 50 };
+    const muzzle = this.muzzlePosition(player_pos, mouse_position);
+    const position = { x: muzzle.x - 5, y: muzzle.y - 5 };   // a bala tem 10x10 e sai centrada no cano
     const itemUpdater = Main.instance().getItemUpdaterInstance();
     itemUpdater.create(new Bullet({ start_pos: position, end_pos: mouse_position, strength: this.strength }));
   }

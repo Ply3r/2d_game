@@ -8,8 +8,9 @@ class TecNine extends Gun {
       total_ammunition: 40, 
       image: '../../assets/weapons/gun/tec_9.png', 
       size: { x: 60, y: 40 },
+      grip: { x: 16, y: 24 },
+      muzzle: { x: 44, y: -10 },
       automatic: false,
-      distance: { x: 50, y: 0 },
       reload_time: 1000,
       strength: 1
     })
