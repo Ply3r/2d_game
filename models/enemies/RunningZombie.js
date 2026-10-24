@@ -9,7 +9,8 @@ class RunningZombie extends Enemy {
       size: { x: 120, y: 120 },
       position: position,
       name: 'running_zombie',
-      total_sprites: 6
+      total_sprites: 8,
+      sprite_ticks: 3
     })
   }
 }

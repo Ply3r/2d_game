@@ -6,7 +6,7 @@ import Main from "../Main.js";
 class Enemy {
   INVENCIBLE_TIME_AFTER_HIT = 100;
 
-  constructor({ life, strength, size, speed, position, total_sprites, name }) {
+  constructor({ life, strength, size, speed, position, total_sprites, sprite_ticks = 6, name }) {
     this.life = life;
     this.strength = strength;
     this.size = size;
@@ -14,6 +14,7 @@ class Enemy {
     this.position = position;
     this.name = name;
     this.total_sprites = total_sprites;
+    this.sprite_ticks = sprite_ticks; // ticks de logica por quadro da animacao
     this.curr_sprite = 0;
     this.direction = 1;
     this.frame_counter = 0;
@@ -23,7 +24,7 @@ class Enemy {
   draw() {
     const drawer = Canvas.drawer();
 
-    const image = Images.get(`../../assets/enemies/${this.name}/${this.curr_sprite}.gif`);
+    const image = Images.get(`./assets/enemies/${this.name}/walk.png`);
 
     drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
     drawer.scale(this.direction, 1);
@@ -34,16 +35,15 @@ class Enemy {
       drawer.filter = "brightness(1.5)"; // Increase brightness (1.5 = 150%)
     }
 
-    drawer.drawImage(image, x_position, 0, this.size.x, this.size.y);
+    drawer.drawImage(image, this.curr_sprite * this.size.x, 0, this.size.x, this.size.y, x_position, 0, this.size.x, this.size.y);
     drawer.filter = "none";
     drawer.restore();
   }
 
   updateSprite() {
-    const sprite_speed = Math.max(1, Math.floor(10 / this.speed)); 
     this.frame_counter++;
 
-    if (this.frame_counter >= sprite_speed) {
+    if (this.frame_counter >= this.sprite_ticks) {
       this.curr_sprite += 1;
       if (this.curr_sprite >= this.total_sprites) this.curr_sprite = 0;
       this.frame_counter = 0; // Reset the counter

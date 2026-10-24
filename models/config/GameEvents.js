@@ -5,6 +5,7 @@ import Grenade from "../weapons/throable/Grenade.js";
 import Main from "../Main.js";
 import Ammunition from "../drops/Ammunition.js";
 import Heart from "../drops/Heart.js";
+import { HAND_Y } from "./Hand.js";
 
 class GameEvents {
   static randomWeapon(type = null) {
@@ -65,7 +66,7 @@ class GameEvents {
   // entre jogador e alvo (P2) e termina no alvo (P3). A previa e a granada usam estes mesmos pontos.
   static getThrowPath(player_pos, target_pos) {
     const direction = target_pos.x > player_pos.x ? 1 : -1;
-    const start = { x: player_pos.x + direction * 40, y: player_pos.y + 70 };
+    const start = { x: player_pos.x + direction * 24, y: player_pos.y + HAND_Y };
     const peak = {
       x: (player_pos.x + target_pos.x) / 2,
       y: player_pos.y + Math.min(0, target_pos.y - player_pos.y) - 400

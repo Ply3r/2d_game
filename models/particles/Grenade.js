@@ -12,12 +12,18 @@ class Grenade extends Particle {
     this.curr_pos = { ...this.path[0] };
   }
 
-  // A granada e centrada na curva, assim ela pousa no ponto marcado pela previa.
+  // A granada e centrada na curva, assim ela pousa no ponto marcado pela previa, e gira no ar.
   draw() {
     const drawer = Canvas.drawer();
     const image = Images.get(this.image);
+    const progress = Math.min((Date.now() - this.start) / this.duration, 1);
 
-    drawer.drawImage(image, this.curr_pos.x - this.size.x / 2, this.curr_pos.y - this.size.y / 2, this.size.x, this.size.y);
+    // save/restore: as particulas sao desenhadas em sequencia e esperam a transformacao original
+    drawer.save();
+    drawer.translate(this.curr_pos.x, this.curr_pos.y);
+    drawer.rotate(progress * Math.PI * 6);
+    drawer.drawImage(image, -this.size.x / 2, -this.size.y / 2, this.size.x, this.size.y);
+    drawer.restore();
   }
 
   // Nao usa a checagem de "chegou perto do fim" da Particle: o voo termina pelo tempo.
