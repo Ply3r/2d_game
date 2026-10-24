@@ -1,0 +1,6 @@
+{
+  "liveServer.settings.root": "/",
+  "javascript.preferences.importModuleSpecifierEnding": "js",
+  "search.exclude": { "assets": true },
+  "files.eol": "\n"
+}
