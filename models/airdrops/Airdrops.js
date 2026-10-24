@@ -10,6 +10,7 @@ import KnifeWeapon from "../weapons/melee/Knife.js";
 
 const MAX_CRATES = 3;
 const MIN_DISTANCE_FROM_PLAYER = 220;
+const CLEARANCE = 16;                    // folga em volta da caixa para nao pousar colada num objeto
 const MARGIN = { left: 60, right: 60, top: 140, bottom: 260 };   // deixa livre o HUD
 
 // Gerencia as caixas de suprimentos: sorteia onde caem, resolve a colisao delas com jogador
@@ -41,7 +42,9 @@ class Airdrops {
 
     for (let attempt = 0; attempt < 20; attempt += 1) {
       landing = { x: MARGIN.left + Math.random() * width, y: MARGIN.top + Math.random() * height };
-      if (Math.hypot(landing.x + 32 - player.x, landing.y + 32 - player.y) >= MIN_DISTANCE_FROM_PLAYER) break;
+      const far_from_player = Math.hypot(landing.x + 32 - player.x, landing.y + 32 - player.y) >= MIN_DISTANCE_FROM_PLAYER;
+      const area = { x: landing.x - CLEARANCE, y: landing.y - CLEARANCE, w: 64 + 2 * CLEARANCE, h: 64 + 2 * CLEARANCE };
+      if (far_from_player && !Main.instance().getMapInstance().blocks(area)) break;
     }
 
     return landing;
@@ -60,23 +63,8 @@ class Airdrops {
     const bodies = [main.getPlayerInstance(), ...main.getEnemiesInstance().getEnemies().filter((enemy) => enemy.isVisible())];
 
     this.crates.filter((crate) => crate.isSolid()).forEach((crate) => {
-      bodies.forEach((body) => Airdrops.pushOut(body, crate));
+      bodies.forEach((body) => GameEvents.pushOut(body, crate.hitbox()));
     });
-  }
-
-  static pushOut(body, crate) {
-    const a = body.hitbox();
-    const b = crate.hitbox();
-    if (!GameEvents.rectsOverlap(a, b)) return;
-
-    const overlap_x = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
-    const overlap_y = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
-
-    if (overlap_x < overlap_y) {
-      body.position.x += (a.x + a.w / 2 <= b.x + b.w / 2) ? -overlap_x : overlap_x;
-    } else {
-      body.position.y += (a.y + a.h / 2 <= b.y + b.h / 2) ? -overlap_y : overlap_y;
-    }
   }
 
   // Caixas pousadas, para as balas.
