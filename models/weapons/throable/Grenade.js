@@ -15,14 +15,10 @@ class Grenade extends Throable {
       distance: { x: 50, y: 0 },
       duration: 1000,
       strength: 4,
-      reload_time: 3000,
     })
   }
 
   attack(player_pos, mouse_position) {
-    if (this.reloading) return;
-    this.startCooldown();
-
     const mouse_position_now = { ...mouse_position };
     const itemUpdater = Main.instance().getItemUpdaterInstance();
     itemUpdater.create(new GrenadeParticle({ start_pos: player_pos, end_pos: mouse_position, speed: this.speed, size: this.size, duration: this.duration, impact_size: this.impact_size }));

@@ -1,32 +1,37 @@
 import Particle from "./Particle.js";
+import Canvas from "../config/Canvas.js";
+import Images from "../config/Images.js";
 import GameEvents from "../config/GameEvents.js";
-import Main from "../Main.js";
 
 class Grenade extends Particle {
   constructor({ start_pos, end_pos, speed, size, duration }) {
     super({ start_pos, end_pos, speed, size, image: '../../assets/weapons/throable/grenade/grenade.png' });
-    this.start = null;
     this.duration = duration;
+    this.start = Date.now(); // mesmo instante do timeout da explosao, em Grenade (arma)
+    this.path = GameEvents.getThrowPath(start_pos, end_pos);
+    this.curr_pos = { ...this.path[0] };
   }
 
+  // A granada e centrada na curva, assim ela pousa no ponto marcado pela previa.
+  draw() {
+    const drawer = Canvas.drawer();
+    const image = Images.get(this.image);
+
+    drawer.drawImage(image, this.curr_pos.x - this.size.x / 2, this.curr_pos.y - this.size.y / 2, this.size.x, this.size.y);
+  }
+
+  // Nao usa a checagem de "chegou perto do fim" da Particle: o voo termina pelo tempo.
   update() {
-    super.update();
+    this.updatePosition();
     return this;
   }
 
   updatePosition() {
-    this.start ??= Date.now();
-
-    const delta = Date.now() - this.start;
-    const progress = Math.min(delta / this.duration, 1)
+    const progress = Math.min((Date.now() - this.start) / this.duration, 1);
 
     if (progress === 1) return this.visible = false;
 
-    const control_pos = { x: (this.end_pos.x) / 2, y: Math.min(0, this.end_pos.y) };
-    const direction = this.end_pos.x > this.start_pos.x ? 1 : -1;
-    let new_start_pos = { x: this.start_pos.x + (40 * direction), y: this.start_pos.y + 70 }
-    
-    this.curr_pos = GameEvents.getNextPositionOnBezier(new_start_pos, control_pos, this.end_pos, 0, progress);
+    this.curr_pos = GameEvents.calculatePointOnBezier(this.path, progress);
   }
 }
 

@@ -61,27 +61,33 @@ class GameEvents {
     return { x: first_point.x + (dx / distance) * speed, y: first_point.y + (dy / distance) * speed }
   }
 
-  static getNextPositionOnBezier(start_pos, control_pos, end_pos, t0, t1) {
-    if (t0 === 0.0 && t1 === 1.0) {
-      // If t0 is 0 and t1 is 1, draw the entire Bezier curve
-      return { x: start_pos.x, y: start_pos.y }
-    }
-    
-    return GameEvents.calculatePointOnBezier(start_pos, control_pos, end_pos, t1);
+  // Trajetoria do arremesso: curva de Bezier cubica [P0, P1, P2, P3] em coordenadas absolutas.
+  // Sai da mao do jogador (P0, repetido em P1), e puxada para um ponto 400px acima do mais alto
+  // entre jogador e alvo (P2) e termina no alvo (P3). A previa e a granada usam estes mesmos pontos.
+  static getThrowPath(player_pos, target_pos) {
+    const direction = target_pos.x > player_pos.x ? 1 : -1;
+    const start = { x: player_pos.x + direction * 40, y: player_pos.y + 70 };
+    const peak = {
+      x: (player_pos.x + target_pos.x) / 2,
+      y: player_pos.y + Math.min(0, target_pos.y - player_pos.y) - 400
+    };
+
+    return [start, start, peak, { x: target_pos.x, y: target_pos.y }];
   }
 
-  static calculatePointOnBezier(start_pos, control_pos, end_pos, t) {
-    const t0 = 1 - t;
-    const t0Sq = t0 * t0;
-    const t1 = 2 * t * t0;
-    const t2 = t * t;
+  // Ponto da curva de Bezier cubica em t (0 = inicio, 1 = fim).
+  static calculatePointOnBezier([p0, p1, p2, p3], t) {
+    const u = 1 - t;
+    const w0 = u * u * u;
+    const w1 = 3 * u * u * t;
+    const w2 = 3 * u * t * t;
+    const w3 = t * t * t;
 
-    // Calculate the position on the curve at t
-    const nx = t0Sq * start_pos.x + t1 * control_pos.x + t2 * end_pos.x;
-    const ny = t0Sq * start_pos.y + t1 * control_pos.y + t2 * end_pos.y;
-
-    return { x: nx, y: ny };
-}
+    return {
+      x: w0 * p0.x + w1 * p1.x + w2 * p2.x + w3 * p3.x,
+      y: w0 * p0.y + w1 * p1.y + w2 * p2.y + w3 * p3.y
+    };
+  }
 }
 
 export default GameEvents;
