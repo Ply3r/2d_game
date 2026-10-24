@@ -1,4 +1,5 @@
 import Canvas from "../config/Canvas.js";
+import Images from "../config/Images.js";
 
 class Weapon {
   constructor({ name, image, size, reload_time, type, strength, distance = { x: 0, y: 0 } }) {
@@ -16,8 +17,7 @@ class Weapon {
   draw(player_pos, crosshair_pos) {
     const drawer = Canvas.drawer();
 
-    const img = new Image();
-    img.src = this.image;
+    const img = Images.get(this.image);
 
     drawer.setTransform(1, 0, 0, 1, player_pos.x, player_pos.y + 70);
     const angle = Math.atan2(crosshair_pos.y - player_pos.y, crosshair_pos.x - player_pos.x);

@@ -1,4 +1,5 @@
 import Canvas from "./Canvas.js";
+import Images from "./Images.js";
 import Controls from "./Controls.js";
 import Main from "../Main.js";
 import GameEvents from "./GameEvents.js";
@@ -38,13 +39,11 @@ class Player {
   }
 
   draw() {
-    this.update();
     const drawer = Canvas.drawer();
 
     // Personagem
-    const player_img = new Image();
+    const player_img = Images.get('./assets/player.png');
     const img_pos = this.getImagePosition();
-    player_img.src = './assets/player.png';
     drawer.setTransform(1, 0, 0, 1, this.position.x, this.position.y);
     drawer.drawImage(player_img, img_pos.x, img_pos.y, this.SPRITE_WIDTH, this.SPRITE_HEIGHT, -40, 0, this.PLAYER_SIZE.x, this.PLAYER_SIZE.y)
 
@@ -71,7 +70,7 @@ class Player {
   
     this.changing_inventory = true;
     const holding_keys = Controls.getHoldingKeys();
-    const holding_numbers = holding_keys.filter((key) => key.match(/[1-4]/gm))
+    const holding_numbers = holding_keys.filter((key) => key.match(/^[1-4]$/))
 
     if(holding_numbers.length && this.inventory[holding_numbers[0]]) {
       this.curr_item = holding_numbers[0];

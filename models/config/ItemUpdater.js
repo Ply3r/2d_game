@@ -13,7 +13,6 @@ class ItemUpdater {
 
   draw() {
     this.items.forEach((item) => item.draw());
-    this.update();
   }
 
   update() {
