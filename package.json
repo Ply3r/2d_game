@@ -1,0 +1,8 @@
+{
+  "name": "2d_game",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
