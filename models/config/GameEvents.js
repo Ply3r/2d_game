@@ -51,12 +51,14 @@ class GameEvents {
   }
 
   static getNextPointInLine(first_point, second_point, speed) {
-    const slope = (first_point.y - second_point.y) / (first_point.x - second_point.x);
-    const direction = first_point.x > second_point.x ? -1 : 1;
-    const deltaX = (speed * direction) / Math.sqrt(1 + slope ** 2);
-    const deltaY = slope * deltaX;
+    const dx = second_point.x - first_point.x;
+    const dy = second_point.y - first_point.y;
+    const distance = Math.hypot(dx, dy);
 
-    return { x: first_point.x + deltaX, y: first_point.y + deltaY }
+    // Pontos coincidentes nao tem direcao; evita dividir por zero (NaN).
+    if (distance === 0) return { x: first_point.x, y: first_point.y };
+
+    return { x: first_point.x + (dx / distance) * speed, y: first_point.y + (dy / distance) * speed }
   }
 
   static getNextPositionOnBezier(start_pos, control_pos, end_pos, t0, t1) {

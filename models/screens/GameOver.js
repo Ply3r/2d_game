@@ -5,6 +5,11 @@ class GameOver {
   constructor() {
     this.main = Main.instance();
     this.draw();
+
+    // A fonte so carrega depois do primeiro desenho; redesenha para nao ficar com a fonte reserva.
+    document.fonts.load('72px "Pixelify Sans"').then(() => {
+      if (!this.main.gameRunning) this.draw();
+    });
     
     const startGame = (event) => {
       if (event.code !== 'Space') return;

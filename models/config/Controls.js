@@ -2,6 +2,7 @@ import Canvas from "./Canvas.js";
 
 let holding_click = false;
 let holding_keys = [];
+let listeners_added = false;
 const mouse_position = { x: 0, y: 0 };
 
 class Controls {
@@ -39,6 +40,9 @@ class Controls {
   }
 
   static addEventListeners() {
+    if (listeners_added) return;
+    listeners_added = true;
+
     Canvas.addListener('keydown', (event) => Controls.keyDown(event))
     Canvas.addListener('keyup', (event) => Controls.keyUp(event))
     Canvas.addListener('mousemove', (event) => Controls.mouseMove(event))

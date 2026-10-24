@@ -7,18 +7,22 @@ class Grenade extends Throable {
   constructor() {
     super({
       name: 'grenade',
-      image: '../../assets/weapons/Throable/grenade/grenade.png',
-      impact_image: '../../assets/weapons/Throable/grenade/explosion.png',
+      image: '../../assets/weapons/throable/grenade/grenade.png',
+      impact_image: '../../assets/weapons/throable/grenade/explosion.png',
       speed: 25,
       impact_size: { x: 500, y: 500 },
       size: { x: 50, y: 50 },
       distance: { x: 50, y: 0 },
       duration: 1000,
       strength: 4,
+      reload_time: 3000,
     })
   }
 
   attack(player_pos, mouse_position) {
+    if (this.reloading) return;
+    this.startCooldown();
+
     const mouse_position_now = { ...mouse_position };
     const itemUpdater = Main.instance().getItemUpdaterInstance();
     itemUpdater.create(new GrenadeParticle({ start_pos: player_pos, end_pos: mouse_position, speed: this.speed, size: this.size, duration: this.duration, impact_size: this.impact_size }));

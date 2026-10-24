@@ -6,6 +6,11 @@ class Menu {
     this.main = Main.instance();
     this.draw();
 
+    // A fonte so carrega depois do primeiro desenho; redesenha para nao ficar com a fonte reserva.
+    document.fonts.load('36px "Pixelify Sans"').then(() => {
+      if (!this.main.gameRunning) this.draw();
+    });
+
     const startGame = (event) => {
       if (event.code !== 'Space') return;
   
@@ -20,6 +25,8 @@ class Menu {
   draw() {
     const drawer = Canvas.drawer();
 
+    drawer.setTransform(1, 0, 0, 1, 0, 0);
+    drawer.clearRect(0, 0, window.innerWidth, window.innerHeight);
     document.body.style.cursor = 'auto'
     drawer.fillStyle ="rgb(255, 255, 255)" 
     drawer.font = "36px Pixelify Sans";

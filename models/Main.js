@@ -19,6 +19,7 @@ class Main {
 
     this.gameRunning = false;
     this.gameOver = false;
+    this.screen = null;
     this.fps = 60;
   }
 
@@ -36,7 +37,14 @@ class Main {
 
     const gameLoop = (currentTime) => {
       if (!this.gameRunning) {
-        this.gameOver ? new GameOver() : new Menu();
+        // Cada tela registra listeners no construtor, entao so e criada quando o estado muda.
+        const screen = this.gameOver ? 'game_over' : 'menu';
+
+        if (this.screen !== screen) {
+          this.screen = screen;
+          this.gameOver ? new GameOver() : new Menu();
+        }
+
         return requestAnimationFrame(gameLoop);
       }
     
@@ -61,6 +69,7 @@ class Main {
   startGame() {
     if (this.gameRunning) return;
 
+    this.screen = null;
     Controls.addEventListeners();
     this.enemiesSpawnRateInterval = GameEvents.createEnemies();
     document.body.style.cursor = 'none';
