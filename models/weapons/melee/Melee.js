@@ -7,6 +7,10 @@ import Main from "../../Main.js";
 class Melee extends Weapon {
   ATTACK_TIME = 100
   ATTACK_SIZE = { x: 350, y: 350 }
+  // Faixa do sprite (apontando para cima, a partir do centro dele) que o golpe realmente
+  // cobre: o crescente fica entre 16 e 104 px abaixo do centro, e o resto ate o jogador
+  // (175 px) e o caminho do golpe. Fora disso o sprite e transparente.
+  HIT_BAND = { from: 16, to: 175 }
 
   constructor({ strength, name, image, total_sprites, size, grip, reload_time }) {
     super({ strength, name, image, size, reload_time, grip, type: 'melee' });
@@ -20,15 +24,15 @@ class Melee extends Weapon {
     if (this.reloading) return;
 
     this.attack_direction = this.getAttackDirection(mouse_position);
-    const attack_area = this.getAttackArea(this.attack_direction);
+    const hit_area = this.getHitArea(this.attack_direction);
     this.attacking = true;
     this.attack_started_time = Date.now();
     setTimeout(() => this.attacking = false, this.ATTACK_TIME);
 
-    // A mesma area que e desenhada: acerta quem tem a hitbox tocando nela.
+    // Acerta quem tem a hitbox tocando a faixa que o golpe cobre.
     const enemies = Main.instance().getEnemiesInstance().getEnemies();
     enemies
-      .filter((enemy) => enemy.isVisible() && GameEvents.rectsOverlap(enemy.hitbox(), attack_area))
+      .filter((enemy) => enemy.isVisible() && GameEvents.rectsOverlap(enemy.hitbox(), hit_area))
       .forEach((enemy) => enemy.getHit(this.strength));
 
     this.reload();
@@ -76,6 +80,28 @@ class Melee extends Weapon {
         return { x: center.x - w, y: center.y - h / 2, w, h };
       case 'right':
         return { x: center.x, y: center.y - h / 2, w, h };
+      default:
+        throw new Error('Invalid attack direction');
+    }
+  }
+
+  // Parte da area de ataque que o golpe cobre de fato (a faixa HIT_BAND do sprite, girada
+  // para a direcao do ataque), em coordenadas absolutas.
+  getHitArea(attack_direction) {
+    const area = this.getAttackArea(attack_direction);
+    const { from, to } = this.HIT_BAND;
+    const half = area.w / 2;
+    const band = to - from;
+
+    switch (attack_direction) {
+      case 'top':
+        return { x: area.x, y: area.y + area.h / 2 + from, w: area.w, h: band };
+      case 'bottom':
+        return { x: area.x, y: area.y + area.h / 2 - to, w: area.w, h: band };
+      case 'left':
+        return { x: area.x + half + from, y: area.y, w: band, h: area.h };
+      case 'right':
+        return { x: area.x + half - to, y: area.y, w: band, h: area.h };
       default:
         throw new Error('Invalid attack direction');
     }
