@@ -35,7 +35,8 @@ class GameOver {
     drawer.fillText(`GAME OVER`, (window.innerWidth / 2) - 190, (window.innerHeight / 2) - 120);
     drawer.fillText(`💀 x ${player_attributes.enemies_killed}`, (window.innerWidth / 2) - 130, (window.innerHeight / 2) - 20);
     drawer.font = "36px Pixelify Sans";
-    drawer.fillText('▶️ Press space to restart', (window.innerWidth / 2) - 250, (window.innerHeight / 2) + 50);
+    drawer.fillText(`Horda ${this.main.getWavesInstance().wave}`, (window.innerWidth / 2) - 70, (window.innerHeight / 2 + 20));
+    drawer.fillText('▶️ Press space to restart', (window.innerWidth / 2) - 250, (window.innerHeight / 2) + 80);
   }
 }
 

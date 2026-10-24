@@ -27,6 +27,7 @@ class InGame {
 
     this.drawDamageOverlay();
     this.drawStatusPanel();
+    this.drawWave();
     this.drawHotbar();
     this.drawHint();
     this.drawCrosshair();
@@ -121,6 +122,27 @@ class InGame {
     this.drawer.textAlign = "right";
     this.drawer.fillText(`${enemies_killed}`, x + width - padding, y + 84);
     this.drawer.restore();
+  }
+
+  // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima com a contagem.
+  drawWave() {
+    const main = Main.instance();
+    const { wave, next_wave, intermission, seconds_left, enemies_left } = main.getWavesInstance().attributes(main.getEnemiesInstance());
+    const center = window.innerWidth / 2;
+
+    if (wave > 0) {
+      this.drawOutlinedText(`HORDA ${wave}`, center, 48, { size: 36, color: COLORS.border });
+      if (!intermission) this.drawOutlinedText(`${enemies_left} restantes`, center, 80, { size: 22, color: COLORS.dim });
+    }
+
+    if (intermission) {
+      const alpha = 0.75 + 0.25 * this.pulse(300);
+      this.drawer.save();
+      this.drawer.globalAlpha = alpha;
+      this.drawOutlinedText(`HORDA ${next_wave}`, center, window.innerHeight * 0.3, { size: 72, color: COLORS.warning });
+      this.drawOutlinedText(`começa em ${seconds_left}`, center, window.innerHeight * 0.3 + 44, { size: 28, color: COLORS.border });
+      this.drawer.restore();
+    }
   }
 
   // Quatro slots fixos no centro de baixo, na ordem das teclas 1-4; o selecionado sobe e destaca.
