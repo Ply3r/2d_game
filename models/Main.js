@@ -2,6 +2,7 @@ import InGame from "./screens/InGame.js";
 import Player from "./config/Player.js";
 import Enemies from "./enemies/Enemies.js";
 import Waves from "./config/Waves.js";
+import Airdrops from "./airdrops/Airdrops.js";
 import ItemUpdater from "./config/ItemUpdater.js";
 import Controls from "./config/Controls.js";
 import Canvas from "./config/Canvas.js";
@@ -16,6 +17,8 @@ class Main {
     this.inGame = new InGame();
     this.enemies = new Enemies();
     this.waves = new Waves();
+    this.airdrops = new Airdrops();
+    this.airdropSky = { draw: () => this.airdrops.drawAir() };
     this.itemUpdater = new ItemUpdater();
 
     this.gameRunning = false;
@@ -36,8 +39,10 @@ class Main {
   // independente da taxa de atualizacao do monitor.
   update() {
     this.player.update();
-    this.waves.update(this.enemies);
+    if (this.waves.update(this.enemies) === 'cleared') this.airdrops.spawn();
     this.enemies.update();
+    this.airdrops.update();
+    this.airdrops.resolveCollisions();
     this.itemUpdater.update();
   }
 
@@ -78,9 +83,11 @@ class Main {
       }
 
       Canvas.draw([
+        this.airdrops,
         this.player,
         this.enemies,
         this.itemUpdater,
+        this.airdropSky,
         this.inGame,
       ]);
 
@@ -110,6 +117,7 @@ class Main {
     this.player.reset();
     this.enemies.reset();
     this.waves.reset();
+    this.airdrops.reset();
     this.itemUpdater.reset();
   }
 
@@ -123,6 +131,10 @@ class Main {
 
   getWavesInstance() {
     return this.waves;
+  }
+
+  getAirdropsInstance() {
+    return this.airdrops;
   }
 
   getEnemiesInstance() {

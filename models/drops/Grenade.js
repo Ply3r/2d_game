@@ -9,11 +9,11 @@ class Grenade extends Drop {
 
   addItem() {
     const player = Main.instance().getPlayerInstance();
-    player.addItem(GrenadeWeapon);
+    player.addItem(new GrenadeWeapon());
   }
 
   checkPlayerCollision() {
-    super.checkPlayerCollision(this.increaseLife);
+    super.checkPlayerCollision(this.addItem);
   }
 }
 

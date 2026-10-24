@@ -46,16 +46,17 @@ class Bullet extends Particle {
     };
   }
 
-  // A bala acerta o inimigo mais proximo de onde saiu entre os que ela toca, e some.
-  // Antes ela atravessava inimigos recem-atingidos e acertava todos os que se sobrepunham.
+  // A bala acerta o alvo mais proximo de onde saiu entre os que ela toca (inimigos e caixas de
+  // suprimentos), e some. Antes ela atravessava inimigos recem-atingidos e acertava todos.
   checkColitionWithEnemies() {
-    const touched = Main.instance().getEnemiesInstance().getEnemies()
-      .filter((enemy) => enemy.isVisible() && GameEvents.checkCollision(this, enemy));
+    const main = Main.instance();
+    const touched = [...main.getEnemiesInstance().getEnemies(), ...main.getAirdropsInstance().getSolidCrates()]
+      .filter((target) => target.isVisible() && GameEvents.checkCollision(this, target));
 
     if (!touched.length) return;
 
-    const distance = (enemy) => Math.hypot(enemy.center().x - this.start_pos.x, enemy.center().y - this.start_pos.y);
-    const target = touched.reduce((nearest, enemy) => (distance(enemy) < distance(nearest) ? enemy : nearest));
+    const distance = (target) => Math.hypot(target.center().x - this.start_pos.x, target.center().y - this.start_pos.y);
+    const target = touched.reduce((nearest, other) => (distance(other) < distance(nearest) ? other : nearest));
 
     target.getHit(this.strength);
     this.visible = false;
