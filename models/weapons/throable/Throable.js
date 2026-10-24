@@ -24,24 +24,27 @@ class Throable extends Weapon {
   reload() {}
 
   explode(position) {
+    const impact_area = this.getImpactArea(position);
     const enemies = Main.instance().getEnemiesInstance().getEnemies();
-    const enemies_in_area = enemies.filter(({ position: enemy_position }) => {
-      return this.checkIfInAttackArea(enemy_position, position)
-    });
 
-    enemies_in_area.forEach((enemy) => enemy.getHit(this.strength));
+    enemies
+      .filter((enemy) => enemy.isVisible() && GameEvents.rectsOverlap(enemy.hitbox(), impact_area))
+      .forEach((enemy) => enemy.getHit(this.strength));
 
     const player = Main.instance().getPlayerInstance();
-    if (this.checkIfInAttackArea(player.position, position)) {
+    if (GameEvents.rectsOverlap(player.hitbox(), impact_area)) {
       player.getHit(this.strength)
     }
   }
 
-  checkIfInAttackArea(enemy_position, position) {
-    return enemy_position.x >= position.x - (this.impact_size.x / 2) &&
-           enemy_position.x <= position.x + (this.impact_size.x / 2) &&
-           enemy_position.y >= position.y - (this.impact_size.y / 2) &&
-           enemy_position.y <= position.y + (this.impact_size.y / 2);
+  // Quadrado do impacto, centrado no ponto onde a granada cai (e onde a explosao e desenhada).
+  getImpactArea(position) {
+    return {
+      x: position.x - this.impact_size.x / 2,
+      y: position.y - this.impact_size.y / 2,
+      w: this.impact_size.x,
+      h: this.impact_size.y
+    };
   }
 
   draw(player_pos, crosshair_pos) {

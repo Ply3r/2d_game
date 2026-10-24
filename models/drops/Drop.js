@@ -40,6 +40,10 @@ class Drop {
     return this.visible;
   }
 
+  hitbox() {
+    return { x: this.position.x, y: this.position.y, w: this.size.x, h: this.size.y };
+  }
+
   attributes() {
     return {
       position: this.position,

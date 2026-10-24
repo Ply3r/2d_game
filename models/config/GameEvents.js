@@ -29,17 +29,16 @@ class GameEvents {
     }, ENEMY_SPAWN_RATE)
   }
 
+  // Cada elemento que colide expoe hitbox() = { x, y, w, h } (canto superior esquerdo, absoluto).
   static checkCollision(first_element, second_element) {
-    const { position: f_pos, size: f_size } = first_element.attributes();
-    const { position: s_pos, size: s_size } = second_element.attributes();
-    const tolerance = 0.01; // Adjust as needed
-  
-    return (
-      f_pos.x < s_pos.x + s_size.x + tolerance &&
-      f_pos.x + f_size.x > s_pos.x - tolerance &&
-      f_pos.y < s_pos.y + s_size.y + tolerance &&
-      f_pos.y + f_size.y > s_pos.y - tolerance
-    );
+    return GameEvents.rectsOverlap(first_element.hitbox(), second_element.hitbox());
+  }
+
+  static rectsOverlap(first, second) {
+    return first.x < second.x + second.w &&
+           first.x + first.w > second.x &&
+           first.y < second.y + second.h &&
+           first.y + first.h > second.y;
   }
 
   static dropLoot(position) {
