@@ -44,15 +44,11 @@ class Gun extends Weapon {
   reload() {
     if (this.reloading) return;
 
+    // Nao recarrega mais do que a reserva tem (evita total_ammunition negativo).
+    const new_using_ammunition = Math.min(this.magazine_size - this.using_ammunition, this.total_ammunition);
+    if (new_using_ammunition <= 0) return;
+
     this.reloading = true;
-    let new_using_ammunition;
-
-    if (this.using_ammunition > 0) {
-      new_using_ammunition = this.magazine_size - this.using_ammunition;
-    } else {
-      new_using_ammunition = this.total_ammunition >= this.magazine_size ? this.magazine_size : this.total_ammunition;
-    }
-
     this.total_ammunition -= new_using_ammunition;
     this.using_ammunition += new_using_ammunition;
     this.reload_start_time = Date.now();

@@ -1,7 +1,7 @@
 import Particle from "./Particle.js";
 class Explosion extends Particle {
   constructor({ start_pos, end_pos, speed, size, duration }) {
-    super({ start_pos, end_pos, speed, size, image: '../../assets/weapons/Throable/grenade/explosion.png' });
+    super({ start_pos, end_pos, speed, size, image: '../../assets/weapons/throable/grenade/explosion.png' });
     setTimeout(() => this.visible = false, duration);    
   }
 

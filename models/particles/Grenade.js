@@ -4,7 +4,7 @@ import Main from "../Main.js";
 
 class Grenade extends Particle {
   constructor({ start_pos, end_pos, speed, size, duration }) {
-    super({ start_pos, end_pos, speed, size, image: '../../assets/weapons/Throable/grenade/grenade.png' });
+    super({ start_pos, end_pos, speed, size, image: '../../assets/weapons/throable/grenade/grenade.png' });
     this.start = null;
     this.duration = duration;
   }

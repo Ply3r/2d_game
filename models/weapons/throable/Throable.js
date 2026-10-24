@@ -5,8 +5,8 @@ import Main from "../../Main.js";
 class Throable extends Weapon {
   IMPACT_TIME = 500;
 
-  constructor({ strength, name, image, size, type, speed, impact_image, impact_size, distance, duration }) {
-    super({ strength, name, image, size, type, distance });
+  constructor({ strength, name, image, size, type, speed, impact_image, impact_size, distance, duration, reload_time }) {
+    super({ strength, name, image, size, type, distance, reload_time });
     this.speed = speed;
     this.current_pos = null;
     this.duration = duration;
@@ -17,6 +17,13 @@ class Throable extends Weapon {
   attack(_player_pos, _mouse_position) {
     const player = Main.instance().getPlayerInstance();
     // player.inventory[player.curr_item] = null;
+  }
+
+  // Item arremessavel nao recarrega: 'r' nao faz nada, so o lancamento inicia o cooldown.
+  reload() {}
+
+  startCooldown() {
+    super.reload();
   }
 
   explode(position) {
