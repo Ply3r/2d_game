@@ -10,11 +10,11 @@ import { HAND_Y } from "./Hand.js";
 class GameEvents {
   static randomWeapon(type = null) {
     const types = {
-      gun: [TommyGun, TecNine],
+      gun: [TommyGun],
       melee: [Knife],
       throable: [Grenade]
     }
-    
+
     const available_types = ['gun', 'melee', 'throable'];
     if (!type) type = available_types[Math.floor(Math.random() * available_types.length)];
     const random_index = Math.floor(Math.random() * types[type].length);
