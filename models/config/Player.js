@@ -10,6 +10,7 @@ class Player {
   PLAYER_SIZE = { x: 80, y: 80 };
   MOVE_SPEED = 8;
   PLAYER_TOTAL_LIFE = 3;
+  MAX_LIFE = 5;
   INVENCIBLE_TIME_AFTER_HIT = 500;
 
   constructor() {
@@ -34,6 +35,7 @@ class Player {
     this.current_sprite = 0;
     this.life = this.PLAYER_TOTAL_LIFE;
     this.invencible = false;
+    this.last_hit_time = 0;
     this.enemies_killed = 0;
     this.changing_inventory = false;
   }
@@ -130,6 +132,7 @@ class Player {
 
     this.life -= strength;
     this.invencible = true;
+    this.last_hit_time = Date.now();
 
     if (this.life <= 0) Main.instance().finishGame();
 
@@ -171,7 +174,7 @@ class Player {
 
   increaseLife() {
     this.life += 1;
-    if (this.life >= 5) this.life = 5;
+    if (this.life >= this.MAX_LIFE) this.life = this.MAX_LIFE;
   }
 
   // O sprite e desenhado de position.x - 40 a position.x + 40 (position e o topo, no centro).
@@ -187,6 +190,8 @@ class Player {
     return {
       inventory: this.inventory,
       life: this.life,
+      max_life: this.MAX_LIFE,
+      last_hit_time: this.last_hit_time,
       position: this.position,
       size: this.PLAYER_SIZE,
       invencible: this.invencible,

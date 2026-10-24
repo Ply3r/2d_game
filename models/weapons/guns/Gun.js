@@ -62,6 +62,7 @@ class Gun extends Weapon {
       total_ammunition: this.total_ammunition,
       using_ammunition: this.using_ammunition,
       automatic: this.automatic,
+      magazine_size: this.magazine_size,
       reloading: this.reloading,
       reload_time: this.reload_time,
       reload_start_time: this.reload_start_time,
