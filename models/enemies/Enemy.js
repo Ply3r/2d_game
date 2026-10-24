@@ -58,6 +58,13 @@ class Enemy {
   }
 
   update() {
+    // Um inimigo morto por tiro/faca/granada depois do seu update ainda estaria no array:
+    // so contabiliza a morte, sem se mover nem machucar o jogador.
+    if (this.life <= 0) {
+      this.checkIsDead();
+      return this;
+    }
+
     this.updateSprite();
     this.move();
     if (this.invencible) this.takingHit();
@@ -67,23 +74,25 @@ class Enemy {
     return this;
   }
 
+  // Move o inimigo (pelo centro) em direcao a um ponto; speed negativo afasta.
+  moveTowards(target, speed) {
+    const { x, y } = GameEvents.getNextPointInLine(this.center(), target, speed);
+    this.position.x = x - this.size.x / 2;
+    this.position.y = y - this.size.y / 2;
+  }
+
   move() {
-    const player = Main.instance().getPlayerInstance()
-    const { position: player_pos } = player.attributes();
+    const player = Main.instance().getPlayerInstance();
+    const player_center = player.center();
 
     if (GameEvents.checkCollision(player, this)) return;
-      
-    this.direction = this.position.x >= player_pos.x ? -1 : 1;
-    const { x, y } = GameEvents.getNextPointInLine(this.position, player_pos, this.speed);
-    this.position.x = x;
-    this.position.y = y;
+
+    this.direction = this.center().x >= player_center.x ? -1 : 1;
+    this.moveTowards(player_center, this.speed);
   }
 
   takingHit() {
-    const { position: player_pos } = Main.instance().getPlayerInstance().attributes();
-    const { x, y } = GameEvents.getNextPointInLine(this.position, player_pos, -(this.speed * 2));
-    this.position.x = x;
-    this.position.y = y;
+    this.moveTowards(Main.instance().getPlayerInstance().center(), -(this.speed * 2));
   }
 
   checkCollisionWithPlayer() {
@@ -107,6 +116,14 @@ class Enemy {
 
   isVisible() {
     return this.life > 0;
+  }
+
+  hitbox() {
+    return { x: this.position.x, y: this.position.y, w: this.size.x, h: this.size.y };
+  }
+
+  center() {
+    return { x: this.position.x + this.size.x / 2, y: this.position.y + this.size.y / 2 };
   }
 
   attributes() {

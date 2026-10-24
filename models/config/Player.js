@@ -90,7 +90,7 @@ class Player {
 
   checkCollisionWithEnemies() {
     const enemies = Main.instance().getEnemiesInstance().getEnemies();
-    return enemies.some(enemy => GameEvents.checkCollision(this, enemy))
+    return enemies.some(enemy => enemy.isVisible() && GameEvents.checkCollision(this, enemy))
   }
 
   updatePosition(holding_keys, move_speed) {
@@ -126,6 +126,8 @@ class Player {
   }
 
   getHit(strength) {
+    if (this.invencible) return;
+
     this.life -= strength;
     this.invencible = true;
 
@@ -170,6 +172,15 @@ class Player {
   increaseLife() {
     this.life += 1;
     if (this.life >= 5) this.life = 5;
+  }
+
+  // O sprite e desenhado de position.x - 40 a position.x + 40 (position e o topo, no centro).
+  hitbox() {
+    return { x: this.position.x - this.PLAYER_SIZE.x / 2, y: this.position.y, w: this.PLAYER_SIZE.x, h: this.PLAYER_SIZE.y };
+  }
+
+  center() {
+    return { x: this.position.x, y: this.position.y + this.PLAYER_SIZE.y / 2 };
   }
 
   attributes() {

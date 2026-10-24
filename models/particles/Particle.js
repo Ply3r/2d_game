@@ -53,6 +53,10 @@ class Particle {
     return this.visible;
   }
 
+  hitbox() {
+    return { x: this.curr_pos.x, y: this.curr_pos.y, w: this.size.x, h: this.size.y };
+  }
+
   attributes() {
     return {
       position: this.curr_pos,
