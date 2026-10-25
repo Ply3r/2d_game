@@ -11,9 +11,13 @@ class Menu {
       if (!this.main.gameRunning) this.draw();
     });
 
+    const editorLink = document.getElementById('editor-link');
+    if (editorLink?.style) editorLink.style.display = 'block';
+
     const startGame = (event) => {
       if (event.code !== 'Space') return;
-  
+
+      if (editorLink?.style) editorLink.style.display = 'none';
       this.main.startGame();
       document.removeEventListener('keydown', startGame);
     }
