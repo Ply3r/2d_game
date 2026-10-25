@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor de mapas - 2D GAME</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
+
+    :root {
+      --bg: #1d1c1b;
+      --panel: #2a2826;
+      --line: #4a4743;
+      --text: #f1ece3;
+      --dim: #a39d92;
+      --accent: #f2c14e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Pixelify Sans", sans-serif; }
+
+    body { display: flex; height: 100vh; background: var(--bg); color: var(--text); overflow: hidden; }
+
+    aside {
+      width: 280px;
+      flex-shrink: 0;
+      background: var(--panel);
+      border-right: 3px solid var(--line);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+    }
+
+    h1 { font-size: 24px; }
+    h2 { font-size: 14px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    button, .button {
+      font-size: 15px;
+      color: var(--text);
+      background: #3a3733;
+      border: 2px solid var(--line);
+      padding: 6px 10px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    button:hover, .button:hover { border-color: var(--text); }
+    button.active { border-color: var(--accent); color: var(--accent); }
+    button:disabled { opacity: 0.4; cursor: default; border-color: var(--line); }
+    .primary { background: #4a6b2e; }
+
+    .tools button { flex: 1; }
+
+    .palette { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .palette button {
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      gap: 4px; height: 84px; padding: 6px 2px; font-size: 12px; line-height: 1.1; text-align: center;
+    }
+    .palette .thumb { height: 44px; display: flex; align-items: center; }
+    .palette img { image-rendering: pixelated; max-width: 70px; max-height: 44px; }
+
+    label { display: flex; align-items: center; gap: 8px; font-size: 15px; cursor: pointer; }
+
+    .hint { font-size: 13px; color: var(--dim); line-height: 1.5; }
+    kbd { border: 1px solid var(--line); padding: 0 4px; font-size: 12px; background: #3a3733; }
+    #status { font-size: 14px; color: var(--dim); margin-top: auto; }
+
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px; min-width: 0; }
+    #stage { border: 3px solid var(--line); image-rendering: pixelated; cursor: crosshair; max-width: 100%; max-height: 100%; touch-action: none; }
+  </style>
+</head>
+<body>
+  <aside>
+    <h1>Editor de mapas</h1>
+
+    <section>
+      <h2>Ferramenta</h2>
+      <div class="row tools">
+        <button data-tool="place" title="Colocar (1)">Colocar</button>
+        <button data-tool="select" title="Selecionar e mover (2)">Mover</button>
+        <button data-tool="erase" title="Apagar (3)">Apagar</button>
+      </div>
+    </section>
+
+    <section id="palette-section"></section>
+
+    <section>
+      <h2>Opções</h2>
+      <div class="row" style="flex-direction: column;">
+        <label><input type="checkbox" id="opt-grid" checked> Alinhar à grade (G)</label>
+        <label><input type="checkbox" id="opt-hitbox"> Mostrar hitboxes (H)</label>
+        <label><input type="checkbox" id="opt-hud" checked> Mostrar áreas do HUD</label>
+        <label><input type="checkbox" id="opt-flip"> Espelhar (F)</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Mapa</h2>
+      <div class="row">
+        <button id="undo" title="Ctrl+Z">Desfazer</button>
+        <button id="redo" title="Ctrl+Y">Refazer</button>
+        <button id="clear">Limpar</button>
+        <button id="export">Exportar</button>
+        <button id="import">Importar</button>
+        <input type="file" id="file" accept="application/json,.json" hidden>
+      </div>
+    </section>
+
+    <a class="button primary" href="index.html">▶ Jogar este mapa</a>
+
+    <p class="hint">
+      Clique para colocar. Com <b>Mover</b>: arraste, <kbd>Del</kbd> apaga, setas ajustam.
+      Botão direito apaga em qualquer ferramenta. Mato e pedrinhas podem ser pintados arrastando.
+      O mapa é salvo sozinho neste navegador; use <b>Exportar</b> para guardar em arquivo
+      (coloque em <code>assets/maps/default.json</code> para valer para todo mundo).
+    </p>
+
+    <p id="status"></p>
+  </aside>
+
+  <main>
+    <canvas id="stage" width="1280" height="720"></canvas>
+  </main>
+
+  <script type="module" src="./editor/editor.js"></script>
+</body>
+</html>

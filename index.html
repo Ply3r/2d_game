@@ -21,10 +21,30 @@
       background-size: 1152px 768px; /* tamanho real: o cenario repete sem emendas */
       image-rendering: pixelated;
     }
+
+    #editor-link {
+      display: none;
+      position: fixed;
+      left: 50%;
+      top: calc(50% + 60px);
+      transform: translateX(-50%);
+      padding: 10px 24px;
+      font-size: 28px;
+      color: #fff;
+      text-decoration: none;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #fff;
+      cursor: pointer;
+    }
+
+    #editor-link:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
   </style>
 </head>
 <body>
   <canvas width="1280" height="720" id="canvas"></canvas>
+  <a id="editor-link" href="editor.html">🗺️ Map editor</a>
   <script type="module" src="./index.js"></script>
 </body>
 </html>

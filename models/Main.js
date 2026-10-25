@@ -3,6 +3,7 @@ import Player from "./config/Player.js";
 import Enemies from "./enemies/Enemies.js";
 import Waves from "./config/Waves.js";
 import Airdrops from "./airdrops/Airdrops.js";
+import GameMap from "./map/GameMap.js";
 import ItemUpdater from "./config/ItemUpdater.js";
 import Controls from "./config/Controls.js";
 import Canvas from "./config/Canvas.js";
@@ -18,6 +19,7 @@ class Main {
     this.enemies = new Enemies();
     this.waves = new Waves();
     this.airdrops = new Airdrops();
+    this.map = new GameMap();
     this.airdropSky = { draw: () => this.airdrops.drawAir() };
     this.itemUpdater = new ItemUpdater();
 
@@ -43,6 +45,7 @@ class Main {
     this.enemies.update();
     this.airdrops.update();
     this.airdrops.resolveCollisions();
+    this.map.resolveCollisions([this.player, ...this.enemies.getEnemies().filter((enemy) => enemy.isVisible())]);
     this.itemUpdater.update();
   }
 
@@ -59,8 +62,11 @@ class Main {
 
         if (this.screen !== screen) {
           this.screen = screen;
-          this.gameOver ? new GameOver() : new Menu();
+          this.screenInstance = this.gameOver ? new GameOver() : new Menu();
         }
+
+        // Redesenha todo quadro: o mapa e as imagens carregam depois do primeiro desenho.
+        this.screenInstance.draw();
 
         lastFrameTime = currentTime;
         accumulated = 0;
@@ -83,6 +89,7 @@ class Main {
       }
 
       Canvas.draw([
+        this.map,
         this.airdrops,
         this.player,
         this.enemies,
@@ -131,6 +138,10 @@ class Main {
 
   getWavesInstance() {
     return this.waves;
+  }
+
+  getMapInstance() {
+    return this.map;
   }
 
   getAirdropsInstance() {

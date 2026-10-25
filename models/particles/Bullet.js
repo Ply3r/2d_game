@@ -18,10 +18,25 @@ class Bullet extends Particle {
   }
 
   update() {
+    const previous = { ...this.curr_pos };
     super.update();
+    if (this.hitSolid(previous)) {
+      this.visible = false;
+      return this;
+    }
     this.checkColitionWithEnemies();
 
     return this;
+  }
+
+  // Objetos solidos do mapa param a bala antes de ela chegar em quem esta atras. A bala anda
+  // 50px por tick, entao testa tambem o ponto do meio do trajeto para nao atravessar objetos finos.
+  hitSolid(previous) {
+    const map = Main.instance().getMapInstance();
+    const middle = { x: (previous.x + this.curr_pos.x) / 2, y: (previous.y + this.curr_pos.y) / 2 };
+    const at = (position) => ({ x: position.x, y: position.y, w: this.size.x, h: this.size.y });
+
+    return map.blocks(at(this.curr_pos)) || map.blocks(at(middle));
   }
 
   static getBulletFinalPosition(first_position, mouse_position) {

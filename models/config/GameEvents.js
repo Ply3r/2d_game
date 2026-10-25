@@ -34,6 +34,21 @@ class GameEvents {
            first.y + first.h > second.y;
   }
 
+  // Empurra body (tem position e hitbox()) para fora de rect, pelo eixo de menor sobreposicao.
+  static pushOut(body, rect) {
+    const a = body.hitbox();
+    if (!GameEvents.rectsOverlap(a, rect)) return;
+
+    const overlap_x = Math.min(a.x + a.w, rect.x + rect.w) - Math.max(a.x, rect.x);
+    const overlap_y = Math.min(a.y + a.h, rect.y + rect.h) - Math.max(a.y, rect.y);
+
+    if (overlap_x < overlap_y) {
+      body.position.x += (a.x + a.w / 2 <= rect.x + rect.w / 2) ? -overlap_x : overlap_x;
+    } else {
+      body.position.y += (a.y + a.h / 2 <= rect.y + rect.h / 2) ? -overlap_y : overlap_y;
+    }
+  }
+
   static dropLoot(position) {
     if (Math.random() > 0.3) return;
 
