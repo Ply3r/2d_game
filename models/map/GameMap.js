@@ -1,6 +1,7 @@
 import Canvas from "../config/Canvas.js";
 import Images from "../config/Images.js";
 import GameEvents from "../config/GameEvents.js";
+import Pathfinder from "./Pathfinder.js";
 import { CATALOG } from "./catalog.js";
 import { emptyMap, sanitize, parse, depthSorted, hitboxRect, spriteRect, STORAGE_KEY } from "./MapData.js";
 
@@ -11,6 +12,7 @@ class GameMap {
   constructor() {
     this.data = emptyMap();
     this.cache = null;
+    this.pathfinder = new Pathfinder();
   }
 
   setData(map) {
@@ -46,6 +48,11 @@ class GameMap {
 
   blocks(rect) {
     return this.solids().some((solid) => GameEvents.rectsOverlap(solid, rect));
+  }
+
+  // Ponto para onde um corpo de raio `radius` centrado em `from` deve andar para chegar em `target` sem bater nos solidos.
+  waypoint(from, target, radius) {
+    return this.pathfinder.waypoint(from, target, radius, this.solids(), window.innerWidth, window.innerHeight);
   }
 
   // Empurra para fora dos solidos tudo que tem position e hitbox().

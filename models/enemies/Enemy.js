@@ -88,7 +88,8 @@ class Enemy {
     if (GameEvents.checkCollision(player, this)) return;
 
     this.direction = this.center().x >= player_center.x ? -1 : 1;
-    this.moveTowards(player_center, this.speed);
+    const radius = Math.max(this.size.x, this.size.y) / 2;
+    this.moveTowards(Main.instance().getMapInstance().waypoint(this.center(), player_center, radius), this.speed);
   }
 
   takingHit() {
