@@ -9,6 +9,7 @@ import GrenadeWeapon from "../weapons/throable/Grenade.js";
 import KnifeWeapon from "../weapons/melee/Knife.js";
 import { MultishotDrop, FireRateDrop, DamageDrop, ShieldDrop } from "../drops/Powerup.js";
 import { POWERUPS } from "../config/Powerups.js";
+import Vendor from "../vendor/Vendor.js";
 
 const POWERUP_WEIGHT = 15;
 
@@ -40,6 +41,8 @@ class Airdrops {
 
   randomLanding() {
     const player = Main.instance().getPlayerInstance().center();
+    // Com o vendedor chegando, a caixa nao cai onde a van vai estacionar.
+    const parked = Main.instance().getVendorInstance().isPresent() ? Vendor.parkedHitbox() : null;
     const width = window.innerWidth - MARGIN.left - MARGIN.right - 64;
     const height = window.innerHeight - MARGIN.top - MARGIN.bottom - 64;
     let landing;
@@ -48,7 +51,8 @@ class Airdrops {
       landing = { x: MARGIN.left + Math.random() * width, y: MARGIN.top + Math.random() * height };
       const far_from_player = Math.hypot(landing.x + 32 - player.x, landing.y + 32 - player.y) >= MIN_DISTANCE_FROM_PLAYER;
       const area = { x: landing.x - CLEARANCE, y: landing.y - CLEARANCE, w: 64 + 2 * CLEARANCE, h: 64 + 2 * CLEARANCE };
-      if (far_from_player && !Main.instance().getMapInstance().blocks(area)) break;
+      const under_vendor = parked && GameEvents.rectsOverlap(area, parked);
+      if (far_from_player && !under_vendor && !Main.instance().getMapInstance().blocks(area)) break;
     }
 
     return landing;

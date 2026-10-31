@@ -17,6 +17,7 @@ class Player {
   PLAYER_TOTAL_LIFE = 3;
   MAX_LIFE = 5;
   INVENCIBLE_TIME_AFTER_HIT = 500;
+  KNOCKBACK_FRICTION = 0.85;   // a cada tick o empurrao perde 15% da forca
 
   constructor() {
     this.setup();
@@ -45,6 +46,7 @@ class Player {
     this.last_hit_time = 0;
     this.enemies_killed = 0;
     this.changing_inventory = false;
+    this.knockback = { x: 0, y: 0 };   // empurrao recebido (px por tick), ex.: atropelado pelo vendedor
     this.powerups = { ...emptyPowerups(), ...startingPowerups() };
     this.powerup_toast = null;   // { type, time }: aviso do ultimo powerup pego
     this.shields?.reset();
@@ -89,6 +91,7 @@ class Player {
 
   update() {
     this.move();
+    this.updateKnockback();
     this.automaticAttack();
     this.reload();
     this.changeInventory();
@@ -122,6 +125,27 @@ class Player {
     if (this.checkCollisionWithEnemies()) move_speed = move_speed / 4;    
     this.updatePosition(holding_keys, move_speed);
     this.updateSprite(holding_keys);
+  }
+
+  // Lanca o jogador com a velocidade (vx, vy); soma com o empurrao que ele ja estiver levando.
+  knockBack(vx, vy = 0) {
+    this.knockback.x += vx;
+    this.knockback.y += vy;
+  }
+
+  updateKnockback() {
+    const { knockback } = this;
+    if (Math.abs(knockback.x) < 0.1 && Math.abs(knockback.y) < 0.1) {
+      knockback.x = 0;
+      knockback.y = 0;
+      return;
+    }
+
+    // mesmos limites do movimento normal: nao sai da tela
+    this.position.x = Math.min(window.innerWidth - 40, Math.max(40, this.position.x + knockback.x));
+    this.position.y = Math.min(window.innerHeight - this.PLAYER_SIZE.y, Math.max(0, this.position.y + knockback.y));
+    knockback.x *= this.KNOCKBACK_FRICTION;
+    knockback.y *= this.KNOCKBACK_FRICTION;
   }
 
   checkCollisionWithEnemies() {
@@ -168,7 +192,7 @@ class Player {
   }
 
   attack() {
-    if (!this.inventory[this.curr_item]) return;
+    if (!this.inventory[this.curr_item] || Main.instance().blocksAttack()) return;
     this.inventory[this.curr_item].attack(this.position, Controls.getMousePosition());
   }
 

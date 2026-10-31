@@ -11,6 +11,8 @@ import Menu from "./screens/Menu.js";
 import GameOver from "./screens/GameOver.js";
 import Pause from "./screens/Pause.js";
 import Clock from "./config/Clock.js";
+import Vendor from "./vendor/Vendor.js";
+import Shop from "./vendor/Shop.js";
 
 let instance = null;
 
@@ -27,6 +29,9 @@ class Main {
     this.world = { draw: () => this.drawWorld() };
     this.itemUpdater = new ItemUpdater();
     this.pauseScreen = new Pause();
+    // Quando o vendedor vai embora, a horda que estava esperando o jogador comeca.
+    this.vendor = new Vendor({ onLeave: () => this.waves.start() });
+    this.shop = new Shop();
 
     this.gameRunning = false;
     this.gameOver = false;
@@ -48,7 +53,12 @@ class Main {
   // independente da taxa de atualizacao do monitor.
   update() {
     this.player.update();
-    if (this.waves.update(this.enemies) === 'cleared') this.airdrops.spawn();
+    if (this.waves.update(this.enemies) === 'cleared') {
+      if (this.waves.waiting) this.vendor.arrive();   // fim das hordas 5, 10, 15...
+      this.airdrops.spawn();
+    }
+    this.vendor.update();
+    this.vendor.collide(this.player);
     this.enemies.update();
     this.airdrops.update();
     this.airdrops.resolveCollisions();
@@ -77,6 +87,20 @@ class Main {
 
         lastFrameTime = currentTime;
         accumulated = 0;
+        return requestAnimationFrame(gameLoop);
+      }
+
+      // Conversando com o vendedor: a partida fica congelada e so a tela dele anda.
+      if (this.shop.isOpen()) {
+        accumulated += currentTime - lastFrameTime;
+        lastFrameTime = currentTime;
+        for (let ticks = 0; accumulated >= tickDuration && ticks < MAX_TICKS_PER_FRAME; ticks += 1) {
+          this.shop.update();
+          accumulated -= tickDuration;
+        }
+        accumulated = Math.min(accumulated, tickDuration);
+
+        Canvas.draw([this.shop]);
         return requestAnimationFrame(gameLoop);
       }
 
@@ -119,6 +143,7 @@ class Main {
       this.world,
       this.itemUpdater,
       this.airdropSky,
+      this.vendor,
       this.inGame,
     ];
   }
@@ -148,13 +173,46 @@ class Main {
   }
 
   // Esc pausa e despausa; com o jogo pausado, M volta ao menu. Trocar de aba ou de janela tambem pausa.
-  // Espaco continua depois das hordas que esperam o jogador (5, 10, 15...).
+  // Espaco continua depois das hordas que esperam o jogador (5, 10, 15...): manda o vendedor embora,
+  // e a horda comeca quando ele sai da tela. Clicar na van parada abre a tela do vendedor (Esc fecha).
   addPauseListeners() {
     if (this.pause_listeners) return;
     this.pause_listeners = true;
 
     document.addEventListener('keydown', (event) => this.onKeyDown(event));
     window.addEventListener('blur', () => this.setPaused(true));
+    document.addEventListener('click', () => this.onClick());
+  }
+
+  onClick() {
+    if (!this.gameRunning || this.paused || this.shop.isOpen()) return;
+    if (this.isMouseOverVendor()) this.openShop();
+  }
+
+  // Cursor de conversa e clique sem tiro: o mouse esta sobre a van parada.
+  isMouseOverVendor() {
+    return this.vendor.isHovered(Controls.getMousePosition());
+  }
+
+  // O jogador nao atira enquanto fala com o vendedor (nem no clique que abre a conversa).
+  blocksAttack() {
+    return this.shop.isOpen() || this.isMouseOverVendor();
+  }
+
+  openShop() {
+    this.shop.open();
+    Clock.pause();
+    Controls.releaseAll();
+    document.body.style.cursor = 'auto';
+  }
+
+  closeShop() {
+    if (!this.shop.isOpen()) return;
+
+    this.shop.close();
+    Clock.resume();
+    Controls.releaseAll();
+    document.body.style.cursor = 'none';
   }
 
   // O espaco que comeca a partida no menu chega antes deste listener existir (ou com o jogo parado),
@@ -163,13 +221,24 @@ class Main {
     if (!this.gameRunning || event.repeat) return;
 
     const key = event.key.toLowerCase();
+    if (this.shop.isOpen()) {
+      if (key === 'escape') this.closeShop();   // Esc sai da conversa, sem pausar
+      return;
+    }
+
     if (key === 'escape') this.setPaused(!this.paused);
     else if (key === 'm' && this.paused) this.quitToMenu();
-    else if (key === ' ' && !this.paused) this.waves.start();
+    else if (key === ' ' && !this.paused) this.continueAfterCheckpoint();
+  }
+
+  continueAfterCheckpoint() {
+    if (this.vendor.isPresent()) this.vendor.dismiss();   // so depois que ele parou
+    else this.waves.start();
   }
 
   setPaused(paused) {
-    if (!this.gameRunning || this.paused === paused) return;
+    // Com a tela do vendedor aberta o jogo ja esta congelado (e o Esc fecha ela).
+    if (!this.gameRunning || this.paused === paused || this.shop.isOpen()) return;
 
     this.paused = paused;
     if (paused) Clock.pause();
@@ -181,6 +250,7 @@ class Main {
   }
 
   quitToMenu() {
+    this.closeShop();
     this.setPaused(false);
     this.gameRunning = false;
     this.gameOver = false;
@@ -193,6 +263,7 @@ class Main {
   }
 
   resetGame() {
+    this.closeShop();
     this.setPaused(false);
     this.gameRunning = true;
     this.gameOver = false;
@@ -200,6 +271,7 @@ class Main {
     this.enemies.reset();
     this.waves.reset();
     this.airdrops.reset();
+    this.vendor.reset();
     this.itemUpdater.reset();
   }
 
@@ -225,6 +297,14 @@ class Main {
 
   getEnemiesInstance() {
     return this.enemies;
+  }
+
+  getVendorInstance() {
+    return this.vendor;
+  }
+
+  getShopInstance() {
+    return this.shop;
   }
 
   getInGameInstance() {
