@@ -2,13 +2,10 @@ import StandardZombie from "../enemies/StandardZombie.js";
 import RunningZombie from "../enemies/RunningZombie.js";
 import { startingWave } from "./UrlOptions.js";
 
-const TICKS_PER_SECOND = 60;
-const FIRST_WAVE_DELAY = 2 * TICKS_PER_SECOND;
-const INTERMISSION = 5 * TICKS_PER_SECOND;
 const MAX_ALIVE = 30;
 
 // Sistema de hordas. Cada horda tem uma quantidade fixa de inimigos que vai aparecendo aos
-// poucos; a proxima so comeca depois de matar todos e de um intervalo para respirar.
+// poucos; a proxima so comeca depois de matar todos e de o jogador apertar espaco (start()).
 // A quantidade, o ritmo de aparicao e a chance de zumbis rapidos crescem a cada horda.
 class Waves {
   constructor() {
@@ -19,7 +16,7 @@ class Waves {
   reset() {
     this.wave = startingWave() - 1;
     this.state = 'intermission';
-    this.timer = FIRST_WAVE_DELAY;
+    this.ready = false;   // o jogador pediu para comecar a proxima horda
     this.remaining = 0;
     this.spawn_timer = 0;
   }
@@ -61,10 +58,15 @@ class Waves {
     this.spawn_timer = Waves.spawnInterval(this.wave);
   }
 
-  updateIntermission() {
-    this.timer -= 1;
-    if (this.timer > 0) return;
+  // Chamado quando o jogador aperta espaco: a proxima horda comeca no proximo tick.
+  start() {
+    if (this.state === 'intermission') this.ready = true;
+  }
 
+  updateIntermission() {
+    if (!this.ready) return;
+
+    this.ready = false;
     this.wave += 1;
     this.state = 'active';
     this.remaining = Waves.enemiesInWave(this.wave);
@@ -73,7 +75,7 @@ class Waves {
 
   startIntermission() {
     this.state = 'intermission';
-    this.timer = INTERMISSION;
+    this.ready = false;
   }
 
   pickEnemy() {
@@ -87,8 +89,7 @@ class Waves {
     return {
       wave: this.wave,
       next_wave: this.wave + 1,
-      intermission: this.state === 'intermission',
-      seconds_left: Math.ceil(this.timer / TICKS_PER_SECOND),
+      intermission: this.state === 'intermission',   // esperando o jogador apertar espaco
       enemies_left: this.remaining + alive,
     };
   }

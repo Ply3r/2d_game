@@ -31,7 +31,6 @@ describe('pause', () => {
     Date.now = () => now;
     main.addPauseListeners();
     main.resetGame();
-    main.waves.timer = Infinity;
     player.position = { x: 640, y: 360 };
     player.invencible = true;
   });

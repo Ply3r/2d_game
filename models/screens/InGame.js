@@ -172,10 +172,10 @@ class InGame {
     this.drawer.restore();
   }
 
-  // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima com a contagem.
+  // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima e espera o espaco.
   drawWave() {
     const main = Main.instance();
-    const { wave, next_wave, intermission, seconds_left, enemies_left } = main.getWavesInstance().attributes(main.getEnemiesInstance());
+    const { wave, next_wave, intermission, enemies_left } = main.getWavesInstance().attributes(main.getEnemiesInstance());
     const center = window.innerWidth / 2;
 
     if (wave > 0) {
@@ -188,7 +188,7 @@ class InGame {
       this.drawer.save();
       this.drawer.globalAlpha = alpha;
       this.drawOutlinedText(`HORDA ${next_wave}`, center, window.innerHeight * 0.3, { size: 72, color: COLORS.warning });
-      this.drawOutlinedText(`começa em ${seconds_left}`, center, window.innerHeight * 0.3 + 44, { size: 28, color: COLORS.border });
+      this.drawOutlinedText('pressione ESPAÇO para começar', center, window.innerHeight * 0.3 + 44, { size: 28, color: COLORS.border });
       this.drawer.restore();
     }
   }

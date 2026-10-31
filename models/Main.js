@@ -148,20 +148,24 @@ class Main {
   }
 
   // Esc pausa e despausa; com o jogo pausado, M volta ao menu. Trocar de aba ou de janela tambem pausa.
+  // Espaco comeca a proxima horda.
   addPauseListeners() {
     if (this.pause_listeners) return;
     this.pause_listeners = true;
 
-    document.addEventListener('keydown', (event) => this.onPauseKey(event));
+    document.addEventListener('keydown', (event) => this.onKeyDown(event));
     window.addEventListener('blur', () => this.setPaused(true));
   }
 
-  onPauseKey(event) {
+  // O espaco que comeca a partida no menu chega antes deste listener existir (ou com o jogo parado),
+  // e segurar a tecla (repeat) nao comeca a horda seguinte sem querer.
+  onKeyDown(event) {
     if (!this.gameRunning || event.repeat) return;
 
     const key = event.key.toLowerCase();
     if (key === 'escape') this.setPaused(!this.paused);
     else if (key === 'm' && this.paused) this.quitToMenu();
+    else if (key === ' ' && !this.paused) this.waves.start();
   }
 
   setPaused(paused) {

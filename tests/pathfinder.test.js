@@ -46,7 +46,6 @@ describe('pathfinder dos zumbis', () => {
   beforeEach(() => {
     enemies.reset();
     main.resetGame();
-    main.waves.timer = Infinity; // sem hordas: zumbis aleatorios se amontoando atrapalhariam o teste
     player.invencible = true;
   });
 
