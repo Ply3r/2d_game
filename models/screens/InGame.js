@@ -4,6 +4,10 @@ import Controls from "../config/Controls.js";
 import Main from "../Main.js";
 import Clock from "../config/Clock.js";
 import { POWERUPS, drawPowerupIcon, levelText } from "../config/Powerups.js";
+import { VENDOR_STOP_Y } from "../vendor/Vendor.js";
+
+// 16x16 em pixel art, desenhado em 2x; a ponta do balao fica em (1, 27).
+const TALK_CURSOR = { image: './assets/vendor/talk_cursor.png', size: 32, tip: { x: 1, y: 27 } };
 
 const FONT = '"Pixelify Sans"';
 const COLORS = {
@@ -193,7 +197,8 @@ class InGame {
   }
 
   // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima com a contagem,
-  // ou pedindo o espaco nos intervalos que esperam o jogador.
+  // ou pedindo o espaco nos intervalos que esperam o jogador. Com o vendedor na tela, o anuncio
+  // desce para baixo da van, e o pedido do espaco so aparece depois que ele para.
   drawWave() {
     const main = Main.instance();
     const { wave, next_wave, intermission, waiting, seconds_left, enemies_left } = main.getWavesInstance().attributes(main.getEnemiesInstance());
@@ -205,12 +210,16 @@ class InGame {
     }
 
     if (intermission) {
+      const vendor = main.getVendorInstance();
+      const y = vendor.isPresent() ? Math.max(window.innerHeight * 0.3, VENDOR_STOP_Y + 90) : window.innerHeight * 0.3;
       const alpha = 0.75 + 0.25 * this.pulse(300);
       this.drawer.save();
       this.drawer.globalAlpha = alpha;
-      this.drawOutlinedText(`HORDA ${next_wave}`, center, window.innerHeight * 0.3, { size: 72, color: COLORS.warning });
-      const hint = waiting ? 'pressione ESPAÇO para continuar' : `começa em ${seconds_left}`;
-      this.drawOutlinedText(hint, center, window.innerHeight * 0.3 + 44, { size: 28, color: COLORS.border });
+      this.drawOutlinedText(`HORDA ${next_wave}`, center, y, { size: 72, color: COLORS.warning });
+
+      let hint = `começa em ${seconds_left}`;
+      if (waiting) hint = !vendor.isPresent() || vendor.isWaitingForPlayer() ? 'pressione ESPAÇO para continuar' : '';
+      if (hint) this.drawOutlinedText(hint, center, y + 44, { size: 28, color: COLORS.border });
       this.drawer.restore();
     }
   }
@@ -302,9 +311,18 @@ class InGame {
     }
   }
 
-  // Centrada no mouse: e nele que as balas e a granada miram.
+  // Centrada no mouse: e nele que as balas e a granada miram. Sobre a van parada vira um balao
+  // de conversa, com a ponta (canto de baixo, a esquerda) no mouse.
   drawCrosshair() {
     const mouse_position = Controls.getMousePosition();
+    if (Main.instance().isMouseOverVendor()) {
+      this.drawer.save();
+      this.drawer.imageSmoothingEnabled = false;
+      this.drawer.drawImage(Images.get(TALK_CURSOR.image), mouse_position.x - TALK_CURSOR.tip.x, mouse_position.y - TALK_CURSOR.tip.y, TALK_CURSOR.size, TALK_CURSOR.size);
+      this.drawer.restore();
+      return;
+    }
+
     const crosshair_img = Images.get('./assets/crosshair.png');
     const size = 26;
 
