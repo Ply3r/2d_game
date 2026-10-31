@@ -31,6 +31,7 @@ class InGame {
     this.drawStatusPanel();
     this.drawPowerups();
     this.drawPowerupToast();
+    this.drawReloading();
     this.drawWave();
     this.drawHotbar();
     this.drawHint();
@@ -170,6 +171,25 @@ class InGame {
     this.drawer.globalAlpha = 1 - elapsed / DURATION;
     this.drawOutlinedText(text, position.x, position.y - 16 - elapsed / 30, { size: 26, color });
     this.drawer.restore();
+  }
+
+  // "recarregando..." embaixo do jogador enquanto a arma de fogo da mao recarrega, com os pontinhos
+  // animados (0 a 3, um a cada 300 ms de jogo). A palavra fica parada: o texto e alinhado pela esquerda
+  // a partir da posicao em que "recarregando..." completo ficaria centralizado.
+  drawReloading() {
+    const { inventory, position, size } = this.player.attributes();
+    const weapon = inventory[this.player.curr_item];
+    if (!weapon || weapon.getType() !== 'gun' || !weapon.attributes().reloading) return;
+
+    const dots = Math.floor(Clock.now() / 300) % 4;
+    const y = position.y + size.y + 26;
+
+    this.drawer.save();
+    this.drawer.font = `22px ${FONT}`;
+    const full_width = this.drawer.measureText?.('recarregando...')?.width ?? 0;
+    this.drawer.restore();
+
+    this.drawOutlinedText(`recarregando${'.'.repeat(dots)}`, position.x - full_width / 2, y, { size: 22, color: COLORS.warning, align: 'left' });
   }
 
   // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima e espera o espaco.
