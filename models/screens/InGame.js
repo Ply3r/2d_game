@@ -2,6 +2,8 @@ import Canvas from "../config/Canvas.js";
 import Images from "../config/Images.js";
 import Controls from "../config/Controls.js";
 import Main from "../Main.js";
+import Clock from "../config/Clock.js";
+import { POWERUPS, drawPowerupIcon, levelText } from "../config/Powerups.js";
 
 const FONT = '"Pixelify Sans"';
 const COLORS = {
@@ -27,6 +29,9 @@ class InGame {
 
     this.drawDamageOverlay();
     this.drawStatusPanel();
+    this.drawPowerups();
+    this.drawPowerupToast();
+    this.drawReloading();
     this.drawWave();
     this.drawHotbar();
     this.drawHint();
@@ -80,7 +85,7 @@ class InGame {
   // Vinheta vermelha: forte ao levar dano (some junto com a invencibilidade) e suave com 1 de vida.
   drawDamageOverlay() {
     const { life, last_hit_time } = this.player.attributes();
-    const since_hit = Date.now() - last_hit_time;
+    const since_hit = Clock.now() - last_hit_time;
     const flash_time = this.player.INVENCIBLE_TIME_AFTER_HIT;
 
     let alpha = since_hit < flash_time ? 0.55 * (1 - since_hit / flash_time) : 0;
@@ -124,10 +129,74 @@ class InGame {
     this.drawer.restore();
   }
 
-  // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima com a contagem.
+  // Powerups ativos embaixo do painel de status: icone e o nivel (tracinhos se tem limite, "x3" se nao tem).
+  drawPowerups() {
+    const { powerups } = this.player.attributes();
+    const active = Object.keys(POWERUPS).filter((type) => powerups[type] > 0);
+    const size = 40;
+    const y = 16 + 100 + 10;
+
+    active.forEach((type, index) => {
+      const x = 16 + index * (size + 10);
+      drawPowerupIcon(this.drawer, type, x, y, size);
+
+      const { max, color } = POWERUPS[type];
+      if (!Number.isFinite(max)) {
+        this.drawOutlinedText(levelText(type, powerups[type]), x + size / 2, y + size + 20, { size: 18, color });
+        return;
+      }
+
+      const pip = (size - (max - 1) * 3) / max;
+      for (let level = 0; level < max; level += 1) {
+        this.drawer.fillStyle = level < powerups[type] ? color : COLORS.dim;
+        this.drawer.fillRect(x + level * (pip + 3), y + size + 4, pip, 5);
+      }
+    });
+  }
+
+  // Nome do powerup recem-pego subindo e sumindo sobre o jogador.
+  drawPowerupToast() {
+    const { powerup_toast: toast, position, powerups } = this.player.attributes();
+    const DURATION = 1500;
+    if (!toast) return;
+
+    const elapsed = Clock.now() - toast.time;
+    if (elapsed > DURATION) return;
+
+    const { label, color } = POWERUPS[toast.type];
+    const level = powerups[toast.type];
+    const text = level > 1 || Number.isFinite(POWERUPS[toast.type].max) ? `${label} ${levelText(toast.type, level)}` : label;
+
+    this.drawer.save();
+    this.drawer.globalAlpha = 1 - elapsed / DURATION;
+    this.drawOutlinedText(text, position.x, position.y - 16 - elapsed / 30, { size: 26, color });
+    this.drawer.restore();
+  }
+
+  // "recarregando..." embaixo do jogador enquanto a arma de fogo da mao recarrega, com os pontinhos
+  // animados (0 a 3, um a cada 300 ms de jogo). A palavra fica parada: o texto e alinhado pela esquerda
+  // a partir da posicao em que "recarregando..." completo ficaria centralizado.
+  drawReloading() {
+    const { inventory, position, size } = this.player.attributes();
+    const weapon = inventory[this.player.curr_item];
+    if (!weapon || weapon.getType() !== 'gun' || !weapon.attributes().reloading) return;
+
+    const dots = Math.floor(Clock.now() / 300) % 4;
+    const y = position.y + size.y + 26;
+
+    this.drawer.save();
+    this.drawer.font = `22px ${FONT}`;
+    const full_width = this.drawer.measureText?.('recarregando...')?.width ?? 0;
+    this.drawer.restore();
+
+    this.drawOutlinedText(`recarregando${'.'.repeat(dots)}`, position.x - full_width / 2, y, { size: 22, color: COLORS.warning, align: 'left' });
+  }
+
+  // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima com a contagem,
+  // ou pedindo o espaco nos intervalos que esperam o jogador.
   drawWave() {
     const main = Main.instance();
-    const { wave, next_wave, intermission, seconds_left, enemies_left } = main.getWavesInstance().attributes(main.getEnemiesInstance());
+    const { wave, next_wave, intermission, waiting, seconds_left, enemies_left } = main.getWavesInstance().attributes(main.getEnemiesInstance());
     const center = window.innerWidth / 2;
 
     if (wave > 0) {
@@ -140,7 +209,8 @@ class InGame {
       this.drawer.save();
       this.drawer.globalAlpha = alpha;
       this.drawOutlinedText(`HORDA ${next_wave}`, center, window.innerHeight * 0.3, { size: 72, color: COLORS.warning });
-      this.drawOutlinedText(`começa em ${seconds_left}`, center, window.innerHeight * 0.3 + 44, { size: 28, color: COLORS.border });
+      const hint = waiting ? 'pressione ESPAÇO para continuar' : `começa em ${seconds_left}`;
+      this.drawOutlinedText(hint, center, window.innerHeight * 0.3 + 44, { size: 28, color: COLORS.border });
       this.drawer.restore();
     }
   }
@@ -207,7 +277,7 @@ class InGame {
   }
 
   drawReloadBar(attributes, x, y) {
-    const elapsed = Date.now() - attributes.reload_start_time;
+    const elapsed = Clock.now() - attributes.reload_start_time;
     const progress = Math.min(Math.max(elapsed / attributes.reload_time, 0), 1);
     const bar_width = SLOT.w - 12;
 

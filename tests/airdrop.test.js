@@ -12,6 +12,7 @@ import GrenadeDrop from '../models/drops/Grenade.js';
 import KnifeDrop from '../models/drops/Knife.js';
 import GrenadeWeapon from '../models/weapons/throable/Grenade.js';
 import KnifeWeapon from '../models/weapons/melee/Knife.js';
+import { MultishotDrop, FireRateDrop, DamageDrop, ShieldDrop } from '../models/drops/Powerup.js';
 
 const main = Main.instance();
 const player = main.getPlayerInstance();
@@ -63,10 +64,10 @@ describe('queda da caixa', () => {
     assert.equal(crate.velocity, 0);
   });
 
-  it('nao leva dano nem bloqueia enquanto esta caindo', () => {
+  it('leva dano mas nao bloqueia enquanto esta caindo', () => {
     const crate = new Airdrop({ landing: { x: 300, y: 600 } });
     crate.getHit(5);
-    assert.equal(crate.life, 10);
+    assert.equal(crate.life, 5);
     assert.equal(crate.isSolid(), false);
   });
 
@@ -152,15 +153,15 @@ describe('tiros na caixa', () => {
     assert.equal(bullet.visible, false);
   });
 
-  it('a bala atravessa a caixa que ainda esta no ar', () => {
-    const crate = new Airdrop({ landing: { x: 800, y: 340 } });
-    crate.position = { x: 800, y: 340 };
+  it('a bala acerta a caixa que ainda esta no ar, onde ela esta desenhada', () => {
+    const crate = new Airdrop({ landing: { x: 800, y: 500 } });
+    crate.position = { x: 800, y: 200 };
     airdrops.crates.push(crate);
-    const bullet = new Bullet({ start_pos: { x: 500, y: 360 }, end_pos: { x: 1200, y: 360 }, strength: 2 });
-    bullet.curr_pos = { x: 810, y: 360 };
+    const bullet = new Bullet({ start_pos: { x: 500, y: 220 }, end_pos: { x: 1200, y: 220 }, strength: 2 });
+    bullet.curr_pos = { x: 810, y: 220 };
     bullet.checkColitionWithEnemies();
-    assert.equal(crate.life, 10);
-    assert.equal(bullet.visible, true);
+    assert.equal(crate.life, 8);
+    assert.equal(bullet.visible, false);
   });
 
   it('acerta so o mais proximo entre a caixa e o zumbi atras dela', () => {
@@ -174,6 +175,54 @@ describe('tiros na caixa', () => {
     bullet.checkColitionWithEnemies();
     assert.equal(crate.life, 8);
     assert.equal(zombie.life, 5);
+  });
+});
+
+describe('outras armas na caixa', () => {
+  beforeEach(setup);
+
+  it('a faca acerta a caixa pousada', () => {
+    const knife = new KnifeWeapon();
+    const area = knife.getHitArea('right');
+    const crate = settle(new Airdrop({ landing: { x: area.x + 10, y: 330 } }));
+    airdrops.crates.push(crate);
+    knife.attack(player.position, { x: 900, y: 380 });
+    assert.equal(crate.life, 9);
+  });
+
+  it('a faca acerta a caixa caindo e ignora a que esta fora do golpe', () => {
+    const knife = new KnifeWeapon();
+    const area = knife.getHitArea('right');
+    const falling = new Airdrop({ landing: { x: area.x + 10, y: 600 } });
+    falling.position = { x: area.x + 10, y: 330 };
+    const far = settle(new Airdrop({ landing: { x: 100, y: 330 } }));
+    airdrops.crates.push(falling, far);
+    knife.attack(player.position, { x: 900, y: 380 });
+    assert.equal(falling.life, 9);
+    assert.equal(far.life, 10);
+  });
+
+  it('a explosao da granada acerta caixas no chao e no ar dentro da area', () => {
+    const grenade = new GrenadeWeapon();
+    const ground = settle(new Airdrop({ landing: { x: 300, y: 300 } }));
+    const air = new Airdrop({ landing: { x: 400, y: 600 } });
+    air.position = { x: 400, y: 250 };
+    const far = settle(new Airdrop({ landing: { x: 1100, y: 300 } }));
+    airdrops.crates.push(ground, air, far);
+    grenade.explode({ x: 350, y: 300 });
+    assert.equal(ground.life, 6);
+    assert.equal(air.life, 6);
+    assert.equal(far.life, 10);
+  });
+
+  it('dano suficiente de granada quebra a caixa e solta o item', () => {
+    const grenade = new GrenadeWeapon();
+    const crate = settle(new Airdrop({ landing: { x: 300, y: 300 }, life: 4 }));
+    airdrops.crates.push(crate);
+    grenade.explode({ x: 330, y: 330 });
+    airdrops.update();
+    assert.equal(airdrops.crates.length, 0);
+    assert.equal(items.items.length, 1);
   });
 });
 
@@ -216,7 +265,42 @@ describe('quando cai', () => {
 describe('item da caixa', () => {
   beforeEach(setup);
 
-  it('ao quebrar, solta um item no centro da caixa', () => {
+  it('destruida no ar, o item cai onde a caixa pousaria', () => {
+    const crate = new Airdrop({ landing: { x: 800, y: 500 } });
+    for (let i = 0; i < 40; i += 1) crate.update();
+    assert.ok(!crate.landed && crate.position.y < 300, 'ainda caindo, longe do chao');
+    airdrops.crates.push(crate);
+    crate.getHit(99);
+    airdrops.update();
+    assert.equal(airdrops.crates.length, 0);
+    assert.equal(items.items.length, 1);
+    const drop = items.items[0];
+    assert.deepEqual([drop.position.x + drop.size.x / 2, drop.position.y + drop.size.y / 2], [832, 532]);
+  });
+
+  it('quebrada quicando, o item tambem fica no ponto de pouso', () => {
+    const crate = land(new Airdrop({ landing: { x: 800, y: 500 } }));
+    crate.update();                          // subindo na primeira quicada
+    assert.ok(crate.position.y < 500);
+    airdrops.crates.push(crate);
+    crate.getHit(99);
+    airdrops.update();
+    const drop = items.items[0];
+    assert.deepEqual([drop.position.x + drop.size.x / 2, drop.position.y + drop.size.y / 2], [832, 532]);
+  });
+
+  it('uma caixa quebrada nao leva mais dano nem solta dois itens', () => {
+    const crate = settle(new Airdrop({ landing: { x: 800, y: 340 } }));
+    airdrops.crates.push(crate);
+    crate.getHit(99);
+    crate.getHit(5);
+    assert.equal(crate.life, -89);
+    airdrops.update();
+    airdrops.update();
+    assert.equal(items.items.length, 1);
+  });
+
+  it('ao quebrar no chao, solta um item no centro da caixa', () => {
     const crate = settle(new Airdrop({ landing: { x: 800, y: 340 } }));
     airdrops.crates.push(crate);
     crate.getHit(99);
@@ -232,16 +316,30 @@ describe('item da caixa', () => {
     player.addItem(new GrenadeWeapon());
     for (let i = 0; i < 300; i += 1) {
       const Loot = airdrops.pickLoot();
-      assert.ok(Loot === Ammunition || Loot === Heart, Loot.name);
+      assert.ok(Loot !== KnifeDrop && Loot !== GrenadeDrop, Loot.name);
     }
   });
 
-  it('com so a TommyGun, todos os 4 itens podem sair', () => {
+  it('com so a TommyGun, todos os itens e powerups podem sair', () => {
     player.life = 2;
     const seen = new Set();
-    for (let i = 0; i < 100; i += 1) { Math.random = () => i / 100; seen.add(airdrops.pickLoot()); }
+    for (let i = 0; i < 200; i += 1) { Math.random = () => i / 200; seen.add(airdrops.pickLoot()); }
     Math.random = real_random;
-    assert.deepEqual(new Set([Ammunition, Heart, GrenadeDrop, KnifeDrop]), seen);
+    assert.deepEqual(new Set([Ammunition, Heart, GrenadeDrop, KnifeDrop, MultishotDrop, FireRateDrop, DamageDrop, ShieldDrop]), seen);
+  });
+
+  it('escudo no maximo nao sai mais; os powerups sem limite continuam saindo', () => {
+    for (let i = 0; i < 3; i += 1) player.addPowerup('shield');
+    for (let i = 0; i < 10; i += 1) player.addPowerup('multishot');
+    const seen = new Set();
+    for (let i = 0; i < 300; i += 1) {
+      Math.random = () => i / 300;
+      const Loot = airdrops.pickLoot();
+      assert.notEqual(Loot, ShieldDrop);
+      seen.add(Loot);
+    }
+    Math.random = real_random;
+    assert.ok(seen.has(MultishotDrop));
   });
 
   it('coracao e menos provavel com a vida cheia', () => {

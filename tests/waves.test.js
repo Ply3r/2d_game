@@ -1,4 +1,4 @@
-import './helpers/env.js';
+import { fire } from './helpers/env.js';
 import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import Main from '../models/Main.js';
@@ -33,6 +33,17 @@ describe('ciclo da horda', () => {
   let waves, enemies;
   beforeEach(() => { waves = new Waves(); enemies = new Enemies(); });
 
+  // Termina a horda atual matando todos e roda o tick que abre o intervalo.
+  const clear = () => { run(waves, enemies, 3000); kill(enemies); enemies.reset(); run(waves, enemies, 1); };
+  // Joga da horda atual ate o intervalo depois da horda `last`, apertando espaco quando pedir.
+  const playUntil = (last) => {
+    while (waves.wave < last || waves.state !== 'intermission') {
+      if (waves.attributes(enemies).waiting) waves.start();
+      run(waves, enemies, 400);
+      if (waves.state === 'active') clear();
+    }
+  };
+
   it('comeca num intervalo, sem inimigos, antes da horda 1', () => {
     assert.equal(waves.wave, 0);
     run(waves, enemies, 100);
@@ -40,7 +51,8 @@ describe('ciclo da horda', () => {
     assert.equal(waves.attributes(enemies).intermission, true);
   });
 
-  it('a horda 1 comeca depois do intervalo e solta so os inimigos dela, aos poucos', () => {
+  it('a horda 1 comeca sozinha depois de 2 s e solta so os inimigos dela, aos poucos', () => {
+    assert.equal(waves.attributes(enemies).waiting, false);
     run(waves, enemies, 121);
     assert.equal(waves.wave, 1);
     assert.equal(enemies.getEnemies().length, 1, 'comeca com um so');
@@ -53,7 +65,7 @@ describe('ciclo da horda', () => {
     assert.ok(enemies.getEnemies().every((e) => e instanceof StandardZombie && !(e instanceof RunningZombie)));
   });
 
-  it('a proxima horda so vem depois de matar todos e do intervalo', () => {
+  it('a proxima horda so vem depois de matar todos e do intervalo de 5 s', () => {
     run(waves, enemies, 2200);
     run(waves, enemies, 1000);
     assert.equal(waves.wave, 1, 'com inimigos vivos nao avanca');
@@ -61,6 +73,7 @@ describe('ciclo da horda', () => {
     kill(enemies);
     run(waves, enemies, 1);
     assert.equal(waves.attributes(enemies).intermission, true);
+    assert.equal(waves.attributes(enemies).waiting, false);
     run(waves, enemies, 299);
     assert.equal(waves.wave, 1);
     run(waves, enemies, 2);
@@ -74,6 +87,36 @@ describe('ciclo da horda', () => {
     assert.equal(enemies.getEnemies().length, Waves.enemiesInWave(2));
   });
 
+  it('depois das hordas 5, 10, 15... espera o jogador apertar espaco', () => {
+    playUntil(5);
+    assert.equal(waves.wave, 5);
+    assert.equal(waves.attributes(enemies).waiting, true);
+    run(waves, enemies, 5000);
+    assert.equal(waves.wave, 5, 'nao continua sozinha');
+
+    waves.start();
+    run(waves, enemies, 1);
+    assert.equal(waves.wave, 6, 'espaco comeca a proxima na hora');
+
+    playUntil(9);
+    assert.equal(waves.attributes(enemies).waiting, false, 'horda 9 nao espera');
+    playUntil(10);
+    assert.equal(waves.attributes(enemies).waiting, true, 'horda 10 espera');
+  });
+
+  it('espaco fora dessas esperas nao faz nada', () => {
+    waves.start();
+    run(waves, enemies, 1);
+    assert.equal(waves.wave, 0, 'nao pula a contagem da horda 1');
+    run(waves, enemies, 2200);
+    waves.start();
+    assert.equal(waves.state, 'active');
+    clear();
+    waves.start();
+    run(waves, enemies, 10);
+    assert.equal(waves.wave, 1, 'nem a contagem entre hordas comuns');
+  });
+
   it('nao passa de 30 inimigos vivos ao mesmo tempo', () => {
     waves.wave = 19; // 61 inimigos
     waves.state = 'active'; waves.remaining = Waves.enemiesInWave(20); waves.spawn_timer = 0;
@@ -82,17 +125,18 @@ describe('ciclo da horda', () => {
     assert.ok(waves.remaining > 0);
   });
 
-  it('o HUD recebe horda, inimigos restantes e contagem', () => {
-    assert.deepEqual(waves.attributes(enemies), { wave: 0, next_wave: 1, intermission: true, seconds_left: 2, enemies_left: 0 });
+  it('o HUD recebe horda, espera, contagem e inimigos restantes', () => {
+    assert.deepEqual(waves.attributes(enemies), { wave: 0, next_wave: 1, intermission: true, waiting: false, seconds_left: 2, enemies_left: 0 });
     run(waves, enemies, 121);
     assert.equal(waves.attributes(enemies).enemies_left, 4);
   });
 
   it('reset volta ao comeco', () => {
-    run(waves, enemies, 500);
+    playUntil(5);
     waves.reset();
     assert.equal(waves.wave, 0);
     assert.equal(waves.remaining, 0);
+    assert.equal(waves.attributes(enemies).waiting, false);
   });
 });
 
@@ -106,5 +150,44 @@ describe('integracao com o jogo', () => {
     main.resetGame();
     assert.equal(main.getWavesInstance().wave, 0);
     assert.equal(main.getEnemiesInstance().getEnemies().length, 0);
+  });
+
+  describe('espaco na espera a cada 5 hordas', () => {
+    const main = Main.instance();
+    const waves = main.getWavesInstance();
+    // intervalo logo depois da horda 5, esperando o jogador
+    beforeEach(() => {
+      main.addPauseListeners();
+      main.resetGame();
+      waves.wave = 5;
+      waves.startIntermission();
+    });
+
+    it('apertar espaco continua para a horda 6', () => {
+      main.update();
+      assert.equal(waves.wave, 5);
+      fire('keydown', ' ');
+      main.update();
+      assert.equal(waves.wave, 6);
+    });
+
+    it('com o jogo pausado o espaco nao continua', () => {
+      main.setPaused(true);
+      fire('keydown', ' ');
+      main.setPaused(false);
+      main.update();
+      assert.equal(waves.wave, 5);
+    });
+
+    it('fora da partida (menu, game over) o espaco nao mexe nas hordas', () => {
+      main.finishGame();
+      fire('keydown', ' ');
+      assert.equal(waves.attributes(main.getEnemiesInstance()).waiting, true);
+    });
+
+    it('segurar o espaco (tecla repetida) nao continua', () => {
+      main.onKeyDown({ key: ' ', repeat: true });
+      assert.equal(waves.attributes(main.getEnemiesInstance()).waiting, true);
+    });
   });
 });

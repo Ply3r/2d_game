@@ -1,6 +1,7 @@
 import Canvas from "../config/Canvas.js";
 import Images from "../config/Images.js";
 import GameEvents from "../config/GameEvents.js";
+import Clock from "../config/Clock.js";
 
 class Particle {
   MAX_TIME_ON_SCREEN = 10000
@@ -14,7 +15,7 @@ class Particle {
     this.size = size
     this.visible = true;
 
-    setTimeout(() => this.visible = false, this.MAX_TIME_ON_SCREEN)
+    Clock.after(this.MAX_TIME_ON_SCREEN, () => this.visible = false)
   }
 
   draw() {

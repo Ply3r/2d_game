@@ -3,6 +3,7 @@ import Canvas from '../../config/Canvas.js';
 import GameEvents from "../../config/GameEvents.js";
 import Images from "../../config/Images.js";
 import Main from "../../Main.js";
+import Clock from "../../config/Clock.js";
 
 class Melee extends Weapon {
   ATTACK_TIME = 100
@@ -26,14 +27,15 @@ class Melee extends Weapon {
     this.attack_direction = this.getAttackDirection(mouse_position);
     const hit_area = this.getHitArea(this.attack_direction);
     this.attacking = true;
-    this.attack_started_time = Date.now();
-    setTimeout(() => this.attacking = false, this.ATTACK_TIME);
+    this.attack_started_time = Clock.now();
+    Clock.after(this.ATTACK_TIME, () => this.attacking = false);
 
     // Acerta quem tem a hitbox tocando a faixa que o golpe cobre.
     const enemies = Main.instance().getEnemiesInstance().getEnemies();
     enemies
       .filter((enemy) => enemy.isVisible() && GameEvents.rectsOverlap(enemy.hitbox(), hit_area))
       .forEach((enemy) => enemy.getHit(this.strength));
+    Main.instance().getAirdropsInstance().hitArea(hit_area, this.strength);
 
     this.reload();
   }
@@ -52,7 +54,7 @@ class Melee extends Weapon {
     const rotations = { top: 0, right: 90, bottom: 180, left: 270 };
     const rotation_angle = rotations[attack_direction] * (Math.PI / 180);
 
-    const diff_in_ms = Date.now() - this.attack_started_time;
+    const diff_in_ms = Clock.now() - this.attack_started_time;
     let image_number = Math.ceil((this.total_sprites * diff_in_ms) / this.ATTACK_TIME);
     image_number = Math.min(Math.max(image_number, 1), this.total_sprites);
 

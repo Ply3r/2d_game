@@ -1,6 +1,7 @@
 import Canvas from "../config/Canvas.js";
 import { HAND_Y } from "../config/Hand.js";
 import Images from "../config/Images.js";
+import Clock from "../config/Clock.js";
 
 const SKIN = "#e8b48a";
 const OUTLINE = "#1b1720";
@@ -80,8 +81,8 @@ class Weapon {
     if (this.reloading) return;
 
     this.reloading = true;
-    this.reload_start_time = Date.now();
-    setTimeout(() => this.reloading = false, this.reload_time);
+    this.reload_start_time = Clock.now();
+    Clock.after(this.reload_time, () => this.reloading = false);
   }
 
   getType() {

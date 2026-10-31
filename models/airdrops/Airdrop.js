@@ -15,8 +15,9 @@ const HIT_FLASH_TICKS = 6;
 const PARACHUTE_FADE_TICKS = 50;
 
 // Caixa de suprimentos: desce de paraquedas, solta o paraquedas perto do chao, cai em queda
-// livre e quica ate parar. Depois de pousar e solida (bloqueia jogador e zumbis) e leva tiros;
-// quando a vida acaba, quebra e solta um item.
+// livre e quica ate parar. Depois de pousar e solida (bloqueia jogador e zumbis). Leva dano de
+// qualquer arma (bala, faca, granada) no chao ou ainda no ar; quando a vida acaba, quebra e solta
+// um item no ponto onde ia pousar.
 class Airdrop {
   // landing: onde o canto superior esquerdo da caixa fica ao pousar.
   constructor({ landing, life = 10 }) {
@@ -77,7 +78,7 @@ class Airdrop {
   }
 
   getHit(strength) {
-    if (!this.landed) return;
+    if (!this.visible) return;
 
     this.life -= strength;
     this.flash = HIT_FLASH_TICKS;
@@ -135,7 +136,7 @@ class Airdrop {
     return this.visible;
   }
 
-  // So bloqueia e leva tiro depois de tocar o chao.
+  // So bloqueia depois de tocar o chao (no ar ja pode ser atingida).
   isSolid() {
     return this.landed;
   }

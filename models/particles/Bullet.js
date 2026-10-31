@@ -4,16 +4,18 @@ import GameEvents from "../config/GameEvents.js";
 import Main from "../Main.js";
 
 class Bullet extends Particle {
-  constructor({ start_pos, end_pos, strength }) {
+  // size e color mudam com o powerup de dano (bala maior e mais vermelha).
+  constructor({ start_pos, end_pos, strength, size = 10, color = "rgb(255, 255, 255)" }) {
     const final_position = Bullet.getBulletFinalPosition(start_pos, end_pos);
-    super({ start_pos, end_pos: final_position, speed: 50, size: { x: 10, y: 10 } });
+    super({ start_pos, end_pos: final_position, speed: 50, size: { x: size, y: size } });
     this.strength = strength;
+    this.color = color;
   }
 
   draw() {
     const drawer = Canvas.drawer();
 
-    drawer.fillStyle = "rgb(255, 255, 255)";
+    drawer.fillStyle = this.color;
     drawer.fillRect(this.curr_pos.x, this.curr_pos.y, this.size.x, this.size.y);
   }
 
@@ -62,10 +64,10 @@ class Bullet extends Particle {
   }
 
   // A bala acerta o alvo mais proximo de onde saiu entre os que ela toca (inimigos e caixas de
-  // suprimentos), e some. Antes ela atravessava inimigos recem-atingidos e acertava todos.
+  // suprimentos, inclusive caindo), e some. Antes ela atravessava inimigos recem-atingidos e acertava todos.
   checkColitionWithEnemies() {
     const main = Main.instance();
-    const touched = [...main.getEnemiesInstance().getEnemies(), ...main.getAirdropsInstance().getSolidCrates()]
+    const touched = [...main.getEnemiesInstance().getEnemies(), ...main.getAirdropsInstance().getHittableCrates()]
       .filter((target) => target.isVisible() && GameEvents.checkCollision(this, target));
 
     if (!touched.length) return;

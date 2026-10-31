@@ -1,6 +1,8 @@
 import Main from "../../Main.js";
 import Bullet from "../../particles/Bullet.js";
 import Weapon from "../Weapon.js";
+import Clock from "../../config/Clock.js";
+import { SEMI_AUTO_INTERVAL, bulletLook, fireInterval, multishotAngles } from "../../config/Powerups.js";
 
 class Gun extends Weapon {
   constructor({ strength, name, magazine_size, total_ammunition, image, grip, muzzle, size, automatic, bullet_time, reload_time }) {
@@ -30,16 +32,39 @@ class Gun extends Weapon {
     if (this.reloading || !this.can_shoot) return;
     if (this.using_ammunition <= 0) return this.reload();
 
-    if (this.automatic) {
+    const player = Main.instance().getPlayerInstance();
+    const { powerups } = player;
+
+    // Intervalo entre tiros: o da arma, encurtado pela cadencia. Arma de clique so tem intervalo com o powerup.
+    const base_interval = this.automatic ? this.bullet_time : (powerups.fire_rate > 0 ? SEMI_AUTO_INTERVAL : 0);
+    if (base_interval > 0) {
       this.can_shoot = false;
-      setTimeout(() => this.can_shoot = true, this.bullet_time);
+      Clock.after(fireInterval(base_interval, powerups.fire_rate), () => this.can_shoot = true);
     }
 
     this.using_ammunition -= 1;
     const muzzle = this.muzzlePosition(player_pos, mouse_position);
-    const position = { x: muzzle.x - 5, y: muzzle.y - 5 };   // a bala tem 10x10 e sai centrada no cano
+    const look = bulletLook(powerups.damage);
+    const position = { x: muzzle.x - look.size / 2, y: muzzle.y - look.size / 2 };   // a bala sai centrada no cano
+    const strength = player.gunDamage();
     const itemUpdater = Main.instance().getItemUpdaterInstance();
-    itemUpdater.create(new Bullet({ start_pos: position, end_pos: mouse_position, strength: this.strength }));
+
+    // Tiro multiplo: a bala da mira mais as outras abertas em leque, gastando uma municao so.
+    multishotAngles(powerups.multishot).forEach((angle) => {
+      const end_pos = Gun.rotateAround(muzzle, mouse_position, angle);
+      itemUpdater.create(new Bullet({ start_pos: position, end_pos, strength, size: look.size, color: look.color }));
+    });
+  }
+
+  // `point` girado `angle` radianos em volta de `center`.
+  static rotateAround(center, point, angle) {
+    if (angle === 0) return point;
+
+    const dx = point.x - center.x;
+    const dy = point.y - center.y;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return { x: center.x + dx * cos - dy * sin, y: center.y + dx * sin + dy * cos };
   }
 
   reload() {
@@ -52,9 +77,9 @@ class Gun extends Weapon {
     this.reloading = true;
     this.total_ammunition -= new_using_ammunition;
     this.using_ammunition += new_using_ammunition;
-    this.reload_start_time = Date.now();
+    this.reload_start_time = Clock.now();
 
-    setTimeout(() => this.reloading = false, this.reload_time);
+    Clock.after(this.reload_time, () => this.reloading = false);
   }
 
   attributes() {
