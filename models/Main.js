@@ -21,6 +21,8 @@ class Main {
     this.airdrops = new Airdrops();
     this.map = new GameMap();
     this.airdropSky = { draw: () => this.airdrops.drawAir() };
+    this.mapDecor = { draw: () => this.map.drawDecor() };
+    this.world = { draw: () => this.drawWorld() };
     this.itemUpdater = new ItemUpdater();
 
     this.gameRunning = false;
@@ -89,10 +91,9 @@ class Main {
       }
 
       Canvas.draw([
-        this.map,
+        this.mapDecor,
         this.airdrops,
-        this.player,
-        this.enemies,
+        this.world,
         this.itemUpdater,
         this.airdropSky,
         this.inGame,
@@ -102,6 +103,20 @@ class Main {
     }
 
     gameLoop(performance.now());
+  }
+
+  // Solidos do mapa, jogador e zumbis em ordem de profundidade: quem tem os pes mais abaixo na tela
+  // e desenhado depois (na frente). Assim quem passa atras de um cacto fica escondido por ele.
+  drawWorld() {
+    const drawer = Canvas.drawer();
+    const feet = (body) => { const box = body.hitbox(); return box.y + box.h; };
+    const actors = [this.player, ...this.enemies.getEnemies()].map((body) => ({ bottom: feet(body), draw: () => body.draw() }));
+
+    // sort e estavel: no empate o solido (que vem antes) fica atras
+    [...this.map.solidDrawables(), ...actors].sort((a, b) => a.bottom - b.bottom).forEach((item) => {
+      drawer.setTransform(1, 0, 0, 1, 0, 0);
+      item.draw();
+    });
   }
 
   startGame() {
