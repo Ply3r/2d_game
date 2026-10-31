@@ -41,6 +41,7 @@ let now = 50000;
 describe('powerups', () => {
   beforeEach(() => {
     main.resetGame();
+    main.waves.timer = Infinity; // sem hordas: zumbis aleatorios atrapalhariam o teste
     player.position = { x: 640, y: 320 };
     player.inventory[1] = new TommyGun();
     Date.now = () => now;

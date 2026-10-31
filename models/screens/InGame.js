@@ -192,10 +192,11 @@ class InGame {
     this.drawOutlinedText(`recarregando${'.'.repeat(dots)}`, position.x - full_width / 2, y, { size: 22, color: COLORS.warning, align: 'left' });
   }
 
-  // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima e espera o espaco.
+  // Horda atual e inimigos restantes no topo; no intervalo, anuncia a proxima com a contagem,
+  // ou pedindo o espaco nos intervalos que esperam o jogador.
   drawWave() {
     const main = Main.instance();
-    const { wave, next_wave, intermission, enemies_left } = main.getWavesInstance().attributes(main.getEnemiesInstance());
+    const { wave, next_wave, intermission, waiting, seconds_left, enemies_left } = main.getWavesInstance().attributes(main.getEnemiesInstance());
     const center = window.innerWidth / 2;
 
     if (wave > 0) {
@@ -208,7 +209,8 @@ class InGame {
       this.drawer.save();
       this.drawer.globalAlpha = alpha;
       this.drawOutlinedText(`HORDA ${next_wave}`, center, window.innerHeight * 0.3, { size: 72, color: COLORS.warning });
-      this.drawOutlinedText('pressione ESPAÇO para começar', center, window.innerHeight * 0.3 + 44, { size: 28, color: COLORS.border });
+      const hint = waiting ? 'pressione ESPAÇO para continuar' : `começa em ${seconds_left}`;
+      this.drawOutlinedText(hint, center, window.innerHeight * 0.3 + 44, { size: 28, color: COLORS.border });
       this.drawer.restore();
     }
   }

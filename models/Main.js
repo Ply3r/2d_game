@@ -148,7 +148,7 @@ class Main {
   }
 
   // Esc pausa e despausa; com o jogo pausado, M volta ao menu. Trocar de aba ou de janela tambem pausa.
-  // Espaco comeca a proxima horda.
+  // Espaco continua depois das hordas que esperam o jogador (5, 10, 15...).
   addPauseListeners() {
     if (this.pause_listeners) return;
     this.pause_listeners = true;
@@ -158,7 +158,7 @@ class Main {
   }
 
   // O espaco que comeca a partida no menu chega antes deste listener existir (ou com o jogo parado),
-  // e segurar a tecla (repeat) nao comeca a horda seguinte sem querer.
+  // e segurar a tecla (repeat) nao pula a espera sem querer.
   onKeyDown(event) {
     if (!this.gameRunning || event.repeat) return;
 

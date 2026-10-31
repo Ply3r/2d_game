@@ -22,7 +22,7 @@ describe('opcoes de teste pela URL', () => {
     withUrl('?horda=7');
     const waves = new Waves();
     assert.equal(waves.attributes(main.getEnemiesInstance()).next_wave, 7);
-    waves.start();
+    waves.timer = 1;
     waves.update(main.getEnemiesInstance());
     assert.equal(waves.wave, 7);
     assert.equal(waves.remaining, Waves.enemiesInWave(7));

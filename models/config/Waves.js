@@ -2,10 +2,15 @@ import StandardZombie from "../enemies/StandardZombie.js";
 import RunningZombie from "../enemies/RunningZombie.js";
 import { startingWave } from "./UrlOptions.js";
 
+const TICKS_PER_SECOND = 60;
+const FIRST_WAVE_DELAY = 2 * TICKS_PER_SECOND;
+const INTERMISSION = 5 * TICKS_PER_SECOND;
+const CHECKPOINT_EVERY = 5;   // depois das hordas 5, 10, 15... o jogo espera o jogador apertar espaco
 const MAX_ALIVE = 30;
 
 // Sistema de hordas. Cada horda tem uma quantidade fixa de inimigos que vai aparecendo aos
-// poucos; a proxima so comeca depois de matar todos e de o jogador apertar espaco (start()).
+// poucos; a proxima so comeca depois de matar todos e de um intervalo para respirar. A cada
+// CHECKPOINT_EVERY hordas o intervalo nao acaba sozinho: espera o jogador apertar espaco (start()).
 // A quantidade, o ritmo de aparicao e a chance de zumbis rapidos crescem a cada horda.
 class Waves {
   constructor() {
@@ -16,7 +21,8 @@ class Waves {
   reset() {
     this.wave = startingWave() - 1;
     this.state = 'intermission';
-    this.ready = false;   // o jogador pediu para comecar a proxima horda
+    this.timer = FIRST_WAVE_DELAY;
+    this.waiting = false;   // intervalo que so acaba quando o jogador aperta espaco
     this.remaining = 0;
     this.spawn_timer = 0;
   }
@@ -58,15 +64,20 @@ class Waves {
     this.spawn_timer = Waves.spawnInterval(this.wave);
   }
 
-  // Chamado quando o jogador aperta espaco: a proxima horda comeca no proximo tick.
+  // Chamado quando o jogador aperta espaco: se o intervalo esta esperando, a proxima horda comeca no proximo tick.
   start() {
-    if (this.state === 'intermission') this.ready = true;
+    if (this.state !== 'intermission' || !this.waiting) return;
+
+    this.waiting = false;
+    this.timer = 0;
   }
 
   updateIntermission() {
-    if (!this.ready) return;
+    if (this.waiting) return;
 
-    this.ready = false;
+    this.timer -= 1;
+    if (this.timer > 0) return;
+
     this.wave += 1;
     this.state = 'active';
     this.remaining = Waves.enemiesInWave(this.wave);
@@ -75,7 +86,8 @@ class Waves {
 
   startIntermission() {
     this.state = 'intermission';
-    this.ready = false;
+    this.timer = INTERMISSION;
+    this.waiting = this.wave % CHECKPOINT_EVERY === 0;
   }
 
   pickEnemy() {
@@ -89,7 +101,9 @@ class Waves {
     return {
       wave: this.wave,
       next_wave: this.wave + 1,
-      intermission: this.state === 'intermission',   // esperando o jogador apertar espaco
+      intermission: this.state === 'intermission',
+      waiting: this.state === 'intermission' && this.waiting,   // esperando o jogador apertar espaco
+      seconds_left: Math.ceil(this.timer / TICKS_PER_SECOND),
       enemies_left: this.remaining + alive,
     };
   }
