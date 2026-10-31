@@ -1,13 +1,15 @@
 import { CATALOG, CATEGORIES } from "../models/map/catalog.js";
-import { emptyMap, parse, serialize, spriteRect, hitboxRect, depthSorted, objectAt, STORAGE_KEY } from "../models/map/MapData.js";
-import { EditorState, snap } from "./EditorState.js";
+import {
+  parse, serialize, spriteRect, hitboxRect, footprintRect, depthSorted, objectAt, cellAt, canPlace, cellSize,
+  COLS, ROWS, MAX_OBJECTS, STORAGE_KEY,
+} from "../models/map/MapData.js";
+import { EditorState } from "./EditorState.js";
 
-// O editor trabalha numa tela de referencia de 1280x720; o jogo reescala as posicoes (em fracao)
-// para o tamanho real da janela.
+// O editor trabalha numa tela de referencia de 1280x720 (grade de 32x18 celulas de 40 px);
+// o jogo estica a mesma grade para o tamanho real da janela.
 const W = 1280;
 const H = 720;
-const GRID = 16;
-const PAINT_SPACING = 30;
+const CELL = cellSize(W, H);
 
 // Areas do jogo que o HUD ocupa (so um guia: nao ha colisao nelas).
 const HUD_AREAS = [
@@ -23,7 +25,7 @@ const ctx = canvas.getContext('2d');
 const $ = (id) => document.getElementById(id);
 
 const state = new EditorState();
-const view = { tool: 'place', type: 'rock_large', mouse: null, drag: null, painting: null, dirty: true };
+const view = { tool: 'place', type: 'rock_large', mouse: null, drag: null, painting: null, erasing: false, dirty: true };
 const images = {};
 
 const image = (src) => {
@@ -107,45 +109,59 @@ function stagePoint(event) {
   return { x: ((event.clientX - rect.left) * W) / rect.width, y: ((event.clientY - rect.top) * H) / rect.height };
 }
 
-const gridSize = () => (option('opt-grid') ? GRID : 0);
-const snapped = (point) => ({ x: snap(point.x, gridSize()), y: snap(point.y, gridSize()) });
-const toFraction = (point) => ({ x: point.x / W, y: point.y / H });
+// Celula da base de um objeto do tipo `type` com o mouse em `point`: o mouse fica no meio da base.
+function baseCell(type, point) {
+  const { cells } = CATALOG[type];
+  return {
+    col: Math.round(point.x / CELL.w - cells.w / 2),
+    row: Math.round(point.y / CELL.h - cells.h / 2),
+  };
+}
 
 // ---------- acoes ----------
 
+// record = false: o checkpoint ja foi feito no inicio da pincelada.
 function placeAt(point, record = true) {
-  const { x, y } = toFraction(snapped(point));
-  const index = state.add(view.type, x, y, option('opt-flip'), record);
-  if (index < 0) setStatus('Limite de objetos do mapa atingido');
+  const { col, row } = baseCell(view.type, point);
+  const index = state.add(view.type, col, row, option('opt-flip'), record);
+  if (index < 0 && state.map.objects.length >= MAX_OBJECTS) setStatus('Limite de objetos do mapa atingido');
   return index;
 }
 
-function eraseAt(point) {
+function eraseAt(point, record = true) {
   const index = objectAt(state.map, point.x, point.y, W, H);
-  if (index >= 0) state.remove(index);
+  if (index >= 0) state.remove(index, record);
   return index >= 0;
 }
+
+const sameCell = (a, b) => a && b && a.col === b.col && a.row === b.row;
 
 function onPointerDown(event) {
   const point = stagePoint(event);
   canvas.setPointerCapture(event.pointerId);
 
-  if (event.button === 2) { if (eraseAt(point)) { save(); refreshUI(); } return; }
+  // Apagar e colocar podem ser "pintados" arrastando, tudo numa unica acao de desfazer.
+  if (event.button === 2 || (event.button === 0 && view.tool === 'erase')) {
+    state.checkpoint();
+    view.erasing = true;
+    eraseAt(point, false);
+    save(); refreshUI();
+    return;
+  }
   if (event.button !== 0) return;
 
-  if (view.tool === 'erase') {
-    if (eraseAt(point)) { save(); refreshUI(); }
-  } else if (view.tool === 'place') {
-    if (placeAt(point) < 0) return;
-    // decoracao pode ser "pintada" arrastando, tudo numa unica acao de desfazer
-    if (CATALOG[view.type].category === 'decor') view.painting = point;
+  if (view.tool === 'place') {
+    state.checkpoint();
+    placeAt(point, false);
+    view.painting = baseCell(view.type, point);
     save(); refreshUI();
   } else {
     const index = objectAt(state.map, point.x, point.y, W, H);
     state.selected = index;
     if (index >= 0) {
       const object = state.map.objects[index];
-      view.drag = { index, offset: { x: point.x - object.x * W, y: point.y - object.y * H } };
+      const cell = cellAt(point.x, point.y, W, H) || { col: object.col, row: object.row };
+      view.drag = { index, offset: { col: cell.col - object.col, row: cell.row - object.row } };
       state.beginMove();
     }
     refreshUI();
@@ -158,18 +174,26 @@ function onPointerMove(event) {
   view.dirty = true;
 
   if (view.drag) {
-    const target = snapped({ x: point.x - view.drag.offset.x, y: point.y - view.drag.offset.y });
-    const { x, y } = toFraction(target);
-    state.moveTo(view.drag.index, x, y);
-  } else if (view.painting && Math.hypot(point.x - view.painting.x, point.y - view.painting.y) >= PAINT_SPACING) {
-    placeAt(point, false);
-    view.painting = point;
+    const cell = cellAt(point.x, point.y, W, H);
+    if (cell) state.moveTo(view.drag.index, cell.col - view.drag.offset.col, cell.row - view.drag.offset.row);
+  } else if (view.painting) {
+    const cell = baseCell(view.type, point);
+    if (!sameCell(cell, view.painting)) { placeAt(point, false); view.painting = cell; }
+  } else if (view.erasing) {
+    eraseAt(point, false);
   }
 }
 
+// Descarta o checkpoint da pincelada se ela nao mudou nada.
+function finishStroke() {
+  state.endMove();
+  save(); refreshUI();
+}
+
 function onPointerUp() {
-  if (view.drag) { state.endMove(); view.drag = null; save(); refreshUI(); }
-  if (view.painting) { view.painting = null; save(); refreshUI(); }
+  if (view.drag) { view.drag = null; finishStroke(); }
+  if (view.painting) { view.painting = null; finishStroke(); }
+  if (view.erasing) { view.erasing = false; finishStroke(); }
 }
 
 function onKeyDown(event) {
@@ -202,10 +226,10 @@ function onKeyDown(event) {
   const arrows = { arrowleft: [-1, 0], arrowright: [1, 0], arrowup: [0, -1], arrowdown: [0, 1] };
   if (arrows[key] && state.selected >= 0) {
     event.preventDefault();
-    const step = gridSize() || 4;
     const object = state.map.objects[state.selected];
     state.checkpoint();
-    state.moveTo(state.selected, object.x + (arrows[key][0] * step) / W, object.y + (arrows[key][1] * step) / H);
+    state.moveTo(state.selected, object.col + arrows[key][0], object.row + arrows[key][1]);
+    state.endMove();
     save(); refreshUI();
   }
 }
@@ -268,18 +292,38 @@ function dashedRect(rect, color, label) {
   ctx.restore();
 }
 
+function drawGrid() {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.18)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (let col = 1; col < COLS; col += 1) { ctx.moveTo(col * CELL.w + 0.5, 0); ctx.lineTo(col * CELL.w + 0.5, H); }
+  for (let row = 1; row < ROWS; row += 1) { ctx.moveTo(0, row * CELL.h + 0.5); ctx.lineTo(W, row * CELL.h + 0.5); }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function fillRect(rect, color, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+  ctx.restore();
+}
+
 function draw() {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0, 0, W, H);
   drawGround();
+  if (option('opt-grid')) drawGrid();
 
   if (option('opt-hud')) {
     HUD_AREAS.forEach((area) => dashedRect(area, '#e8453c', area.label));
     dashedRect(SPAWN, '#4aa3ff', SPAWN.label);
   }
 
-  depthSorted(state.map.objects, W, H).forEach(({ object }) => drawObject(object));
+  depthSorted(state.map.objects).forEach(({ object }) => drawObject(object));
 
   if (option('opt-hitbox')) {
     state.map.objects.forEach((object) => { const box = hitboxRect(object, W, H); if (box) dashedRect(box, '#ff3b3b'); });
@@ -288,6 +332,7 @@ function draw() {
   const selected = state.map.objects[state.selected];
   if (selected) {
     const rect = spriteRect(selected, W, H);
+    fillRect(footprintRect(selected, W, H), '#f2c14e', 0.25);
     ctx.save();
     ctx.strokeStyle = '#f2c14e';
     ctx.lineWidth = 3;
@@ -296,12 +341,19 @@ function draw() {
   }
 
   if (view.tool === 'place' && view.mouse && !view.drag) {
-    const { x, y } = toFraction(snapped(view.mouse));
-    const ghost = { type: view.type, x, y, flip: option('opt-flip') };
+    const ghost = { type: view.type, ...baseCell(view.type, view.mouse), flip: option('opt-flip') };
+    const free = canPlaceGhost(ghost);
+    fillRect(footprintRect(ghost, W, H), free ? '#4ade80' : '#e8453c', 0.35);
     drawObject(ghost, 0.6);
-    const box = hitboxRect(ghost, W, H);
-    if (box) dashedRect(box, '#ffffff');
   }
+}
+
+// Decoracao pode ser trocada por cima de outra decoracao; o resto precisa de celulas livres.
+function canPlaceGhost(ghost) {
+  if (CATALOG[ghost.type].category !== 'decor') return canPlace(state.map, ghost);
+
+  const decor = state.decorAt(ghost.col, ghost.row);
+  return canPlace({ objects: state.map.objects.filter((_, index) => index !== decor) }, ghost);
 }
 
 function frame() {
