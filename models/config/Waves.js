@@ -1,5 +1,6 @@
 import StandardZombie from "../enemies/StandardZombie.js";
 import RunningZombie from "../enemies/RunningZombie.js";
+import { startingWave } from "./UrlOptions.js";
 
 const TICKS_PER_SECOND = 60;
 const FIRST_WAVE_DELAY = 2 * TICKS_PER_SECOND;
@@ -14,8 +15,9 @@ class Waves {
     this.reset();
   }
 
+  // No intervalo, `wave` e a horda que acabou; a primeira a comecar e startingWave() (1, ou ?horda=N).
   reset() {
-    this.wave = 0;
+    this.wave = startingWave() - 1;
     this.state = 'intermission';
     this.timer = FIRST_WAVE_DELAY;
     this.remaining = 0;

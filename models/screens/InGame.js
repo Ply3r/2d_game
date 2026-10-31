@@ -2,6 +2,8 @@ import Canvas from "../config/Canvas.js";
 import Images from "../config/Images.js";
 import Controls from "../config/Controls.js";
 import Main from "../Main.js";
+import Clock from "../config/Clock.js";
+import { POWERUPS, drawPowerupIcon, levelText } from "../config/Powerups.js";
 
 const FONT = '"Pixelify Sans"';
 const COLORS = {
@@ -27,6 +29,8 @@ class InGame {
 
     this.drawDamageOverlay();
     this.drawStatusPanel();
+    this.drawPowerups();
+    this.drawPowerupToast();
     this.drawWave();
     this.drawHotbar();
     this.drawHint();
@@ -80,7 +84,7 @@ class InGame {
   // Vinheta vermelha: forte ao levar dano (some junto com a invencibilidade) e suave com 1 de vida.
   drawDamageOverlay() {
     const { life, last_hit_time } = this.player.attributes();
-    const since_hit = Date.now() - last_hit_time;
+    const since_hit = Clock.now() - last_hit_time;
     const flash_time = this.player.INVENCIBLE_TIME_AFTER_HIT;
 
     let alpha = since_hit < flash_time ? 0.55 * (1 - since_hit / flash_time) : 0;
@@ -121,6 +125,50 @@ class InGame {
     this.drawer.font = `34px ${FONT}`;
     this.drawer.textAlign = "right";
     this.drawer.fillText(`${enemies_killed}`, x + width - padding, y + 84);
+    this.drawer.restore();
+  }
+
+  // Powerups ativos embaixo do painel de status: icone e o nivel (tracinhos se tem limite, "x3" se nao tem).
+  drawPowerups() {
+    const { powerups } = this.player.attributes();
+    const active = Object.keys(POWERUPS).filter((type) => powerups[type] > 0);
+    const size = 40;
+    const y = 16 + 100 + 10;
+
+    active.forEach((type, index) => {
+      const x = 16 + index * (size + 10);
+      drawPowerupIcon(this.drawer, type, x, y, size);
+
+      const { max, color } = POWERUPS[type];
+      if (!Number.isFinite(max)) {
+        this.drawOutlinedText(levelText(type, powerups[type]), x + size / 2, y + size + 20, { size: 18, color });
+        return;
+      }
+
+      const pip = (size - (max - 1) * 3) / max;
+      for (let level = 0; level < max; level += 1) {
+        this.drawer.fillStyle = level < powerups[type] ? color : COLORS.dim;
+        this.drawer.fillRect(x + level * (pip + 3), y + size + 4, pip, 5);
+      }
+    });
+  }
+
+  // Nome do powerup recem-pego subindo e sumindo sobre o jogador.
+  drawPowerupToast() {
+    const { powerup_toast: toast, position, powerups } = this.player.attributes();
+    const DURATION = 1500;
+    if (!toast) return;
+
+    const elapsed = Clock.now() - toast.time;
+    if (elapsed > DURATION) return;
+
+    const { label, color } = POWERUPS[toast.type];
+    const level = powerups[toast.type];
+    const text = level > 1 || Number.isFinite(POWERUPS[toast.type].max) ? `${label} ${levelText(toast.type, level)}` : label;
+
+    this.drawer.save();
+    this.drawer.globalAlpha = 1 - elapsed / DURATION;
+    this.drawOutlinedText(text, position.x, position.y - 16 - elapsed / 30, { size: 26, color });
     this.drawer.restore();
   }
 
@@ -207,7 +255,7 @@ class InGame {
   }
 
   drawReloadBar(attributes, x, y) {
-    const elapsed = Date.now() - attributes.reload_start_time;
+    const elapsed = Clock.now() - attributes.reload_start_time;
     const progress = Math.min(Math.max(elapsed / attributes.reload_time, 0), 1);
     const bar_width = SLOT.w - 12;
 

@@ -2,6 +2,7 @@ import Canvas from "../config/Canvas.js";
 import Images from "../config/Images.js";
 import GameEvents from '../config/GameEvents.js';
 import Main from "../Main.js";
+import Clock from "../config/Clock.js";
 
 class Drop {
   MAX_TIME_ON_SCREEN = 10000
@@ -12,7 +13,7 @@ class Drop {
     this.size = size
     this.visible = true;
 
-    setTimeout(() => this.visible = false, this.MAX_TIME_ON_SCREEN)
+    Clock.after(this.MAX_TIME_ON_SCREEN, () => this.visible = false)
   }
 
   draw() {

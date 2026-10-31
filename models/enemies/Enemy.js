@@ -2,6 +2,7 @@ import Canvas from "../config/Canvas.js";
 import Images from "../config/Images.js";
 import GameEvents from "../config/GameEvents.js";
 import Main from "../Main.js";
+import Clock from "../config/Clock.js";
 
 class Enemy {
   INVENCIBLE_TIME_AFTER_HIT = 100;
@@ -54,7 +55,7 @@ class Enemy {
     this.life -= strength;
     this.invencible = true;
 
-    setTimeout(() => this.invencible = false, this.INVENCIBLE_TIME_AFTER_HIT)
+    Clock.after(this.INVENCIBLE_TIME_AFTER_HIT, () => this.invencible = false)
   }
 
   update() {

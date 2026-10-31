@@ -7,6 +7,10 @@ import Knife from "../drops/Knife.js";
 import GameEvents from "../config/GameEvents.js";
 import GrenadeWeapon from "../weapons/throable/Grenade.js";
 import KnifeWeapon from "../weapons/melee/Knife.js";
+import { MultishotDrop, FireRateDrop, DamageDrop, ShieldDrop } from "../drops/Powerup.js";
+import { POWERUPS } from "../config/Powerups.js";
+
+const POWERUP_WEIGHT = 15;
 
 const MAX_CRATES = 3;
 const MIN_DISTANCE_FROM_PLAYER = 220;
@@ -67,13 +71,21 @@ class Airdrops {
     });
   }
 
-  // Caixas pousadas, para as balas.
-  getSolidCrates() {
-    return this.crates.filter((crate) => crate.isSolid() && crate.isVisible());
+  // Caixas que podem ser atingidas: todas que ainda nao quebraram, no chao ou caindo.
+  getHittableCrates() {
+    return this.crates.filter((crate) => crate.isVisible());
   }
 
+  // Dano em area (golpe de faca, explosao de granada) nas caixas que tocam `area`.
+  hitArea(area, strength) {
+    this.getHittableCrates()
+      .filter((crate) => GameEvents.rectsOverlap(crate.hitbox(), area))
+      .forEach((crate) => crate.getHit(strength));
+  }
+
+  // O item cai onde a caixa pousaria, mesmo se ela for destruida ainda no ar.
   openCrate(crate) {
-    const center = crate.center();
+    const center = { x: crate.landing.x + crate.size.x / 2, y: crate.landing.y + crate.size.y / 2 };
     const Loot = this.pickLoot();
     const drop = new Loot({ x: 0, y: 0 });
     drop.position = { x: center.x - drop.size.x / 2, y: center.y - drop.size.y / 2 };
@@ -81,7 +93,8 @@ class Airdrops {
     Main.instance().getItemUpdaterInstance().create(drop);
   }
 
-  // Municao e vida mais comuns; faca e granada so saem se o jogador ainda nao tem.
+  // Municao e vida mais comuns; faca e granada so saem se o jogador ainda nao tem;
+  // powerups so saem enquanto nao chegaram no maximo.
   pickLoot() {
     const player = Main.instance().getPlayerInstance();
     const owned = Object.values(player.inventory).filter(Boolean);
@@ -93,6 +106,9 @@ class Airdrops {
       { Loot: Heart, weight: hurt ? 30 : 8 },
       { Loot: Grenade, weight: has(GrenadeWeapon) ? 0 : 20 },
       { Loot: Knife, weight: has(KnifeWeapon) ? 0 : 20 },
+      ...[
+        ['multishot', MultishotDrop], ['fire_rate', FireRateDrop], ['damage', DamageDrop], ['shield', ShieldDrop],
+      ].map(([type, Loot]) => ({ Loot, weight: player.powerups[type] < POWERUPS[type].max ? POWERUP_WEIGHT : 0 })),
     ];
 
     let roll = Math.random() * options.reduce((sum, option) => sum + option.weight, 0);

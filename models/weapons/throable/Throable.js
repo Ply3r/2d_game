@@ -30,6 +30,7 @@ class Throable extends Weapon {
     enemies
       .filter((enemy) => enemy.isVisible() && GameEvents.rectsOverlap(enemy.hitbox(), impact_area))
       .forEach((enemy) => enemy.getHit(this.strength));
+    Main.instance().getAirdropsInstance().hitArea(impact_area, this.strength);
 
     const player = Main.instance().getPlayerInstance();
     if (GameEvents.rectsOverlap(player.hitbox(), impact_area)) {

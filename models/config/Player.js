@@ -3,6 +3,10 @@ import Images from "./Images.js";
 import Controls from "./Controls.js";
 import Main from "../Main.js";
 import GameEvents from "./GameEvents.js";
+import Clock from "./Clock.js";
+import Shields from "./Shields.js";
+import { startingPowerups } from "./UrlOptions.js";
+import { POWERUPS, emptyPowerups, damageMultiplier } from "./Powerups.js";
 
 class Player {
   SPRITE_SIZE = 80;
@@ -19,6 +23,7 @@ class Player {
   }
 
   setup() {
+    this.shields = new Shields(this);
     this.reset();
     Canvas.addListener('click', () => this.attack());
   }
@@ -40,6 +45,30 @@ class Player {
     this.last_hit_time = 0;
     this.enemies_killed = 0;
     this.changing_inventory = false;
+    this.powerups = { ...emptyPowerups(), ...startingPowerups() };
+    this.powerup_toast = null;   // { type, time }: aviso do ultimo powerup pego
+    this.shields?.reset();
+  }
+
+  // Ganha um nivel do powerup; devolve false se ele ja esta no maximo.
+  addPowerup(type) {
+    if (this.powerups[type] >= POWERUPS[type].max) return false;
+
+    this.powerups[type] += 1;
+    this.powerup_toast = { type, time: Clock.now() };
+    return true;
+  }
+
+  // A arma de fogo do jogador: a da mao, ou a do slot 1 se ele estiver com faca/granada.
+  gun() {
+    const current = this.inventory[this.curr_item];
+    if (current?.getType() === 'gun') return current;
+    return this.inventory[1]?.getType() === 'gun' ? this.inventory[1] : null;
+  }
+
+  // Dano de cada projetil (e de cada escudo): o da arma de fogo com o bonus de dano.
+  gunDamage() {
+    return (this.gun()?.strength ?? 1) * damageMultiplier(this.powerups.damage);
   }
 
   draw() {
@@ -54,6 +83,8 @@ class Player {
     // weapon
     const weapon = this.inventory[this.curr_item];
     if (weapon) weapon.draw(this.position, Controls.getMousePosition());
+
+    this.shields.draw();
   }
 
   update() {
@@ -61,6 +92,7 @@ class Player {
     this.automaticAttack();
     this.reload();
     this.changeInventory();
+    this.shields.update();
   }
 
   reload() {
@@ -80,7 +112,7 @@ class Player {
       this.curr_item = holding_numbers[0];
     }
 
-    setTimeout(() => this.changing_inventory = false, 100)
+    Clock.after(100, () => this.changing_inventory = false)
   }
 
   move() {
@@ -125,7 +157,9 @@ class Player {
     if (!this.inventory[this.curr_item]) return;
     const weapon_attributes = this.inventory[this.curr_item].attributes();
 
-    if (weapon_attributes.automatic) {
+    // Com o powerup de cadencia, armas de clique tambem atiram segurando o botao.
+    const auto_fire = weapon_attributes.automatic || (weapon_attributes.type === 'gun' && this.powerups.fire_rate > 0);
+    if (auto_fire) {
       const holding_click = Controls.getHoldingClick();
       if (!holding_click) return;
 
@@ -143,13 +177,13 @@ class Player {
 
     this.life -= strength;
     this.invencible = true;
-    this.last_hit_time = Date.now();
+    this.last_hit_time = Clock.now();
 
     if (this.life <= 0) Main.instance().finishGame();
 
-    setTimeout(() => {
+    Clock.after(this.INVENCIBLE_TIME_AFTER_HIT, () => {
       this.invencible = false;
-    }, this.INVENCIBLE_TIME_AFTER_HIT)
+    });
   }
 
   // O corpo olha na direcao da mira (eixo dominante), a mesma em que a arma aponta.
@@ -195,7 +229,9 @@ class Player {
       position: this.position,
       size: this.PLAYER_SIZE,
       invencible: this.invencible,
-      enemies_killed: this.enemies_killed
+      enemies_killed: this.enemies_killed,
+      powerups: this.powerups,
+      powerup_toast: this.powerup_toast,
     }
   }
 }

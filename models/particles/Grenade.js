@@ -2,12 +2,13 @@ import Particle from "./Particle.js";
 import Canvas from "../config/Canvas.js";
 import Images from "../config/Images.js";
 import GameEvents from "../config/GameEvents.js";
+import Clock from "../config/Clock.js";
 
 class Grenade extends Particle {
   constructor({ start_pos, end_pos, speed, size, duration }) {
     super({ start_pos, end_pos, speed, size, image: '../../assets/weapons/throable/grenade/grenade.png' });
     this.duration = duration;
-    this.start = Date.now(); // mesmo instante do timeout da explosao, em Grenade (arma)
+    this.start = Clock.now(); // mesmo instante do timeout da explosao, em Grenade (arma)
     this.path = GameEvents.getThrowPath(start_pos, end_pos);
     this.curr_pos = { ...this.path[0] };
   }
@@ -16,7 +17,7 @@ class Grenade extends Particle {
   draw() {
     const drawer = Canvas.drawer();
     const image = Images.get(this.image);
-    const progress = Math.min((Date.now() - this.start) / this.duration, 1);
+    const progress = Math.min((Clock.now() - this.start) / this.duration, 1);
 
     // save/restore: as particulas sao desenhadas em sequencia e esperam a transformacao original
     drawer.save();
@@ -33,7 +34,7 @@ class Grenade extends Particle {
   }
 
   updatePosition() {
-    const progress = Math.min((Date.now() - this.start) / this.duration, 1);
+    const progress = Math.min((Clock.now() - this.start) / this.duration, 1);
 
     if (progress === 1) return this.visible = false;
 

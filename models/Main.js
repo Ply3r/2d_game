@@ -9,6 +9,8 @@ import Controls from "./config/Controls.js";
 import Canvas from "./config/Canvas.js";
 import Menu from "./screens/Menu.js";
 import GameOver from "./screens/GameOver.js";
+import Pause from "./screens/Pause.js";
+import Clock from "./config/Clock.js";
 
 let instance = null;
 
@@ -24,9 +26,12 @@ class Main {
     this.mapDecor = { draw: () => this.map.drawDecor() };
     this.world = { draw: () => this.drawWorld() };
     this.itemUpdater = new ItemUpdater();
+    this.pauseScreen = new Pause();
 
     this.gameRunning = false;
     this.gameOver = false;
+    this.paused = false;
+    this.pause_listeners = false;
     this.screen = null;
     this.fps = 60;
   }
@@ -75,6 +80,14 @@ class Main {
         return requestAnimationFrame(gameLoop);
       }
 
+      // Pausado: nada atualiza, o jogo congelado fica por tras da tela de pause.
+      if (this.paused) {
+        Canvas.draw([...this.scene(), this.pauseScreen]);
+        lastFrameTime = currentTime;
+        accumulated = 0;
+        return requestAnimationFrame(gameLoop);
+      }
+
       accumulated += currentTime - lastFrameTime;
       lastFrameTime = currentTime;
 
@@ -90,19 +103,24 @@ class Main {
         ticks += 1;
       }
 
-      Canvas.draw([
-        this.mapDecor,
-        this.airdrops,
-        this.world,
-        this.itemUpdater,
-        this.airdropSky,
-        this.inGame,
-      ]);
+      Canvas.draw(this.scene());
 
       requestAnimationFrame(gameLoop);
     }
 
     gameLoop(performance.now());
+  }
+
+  // Camadas da partida, de baixo para cima.
+  scene() {
+    return [
+      this.mapDecor,
+      this.airdrops,
+      this.world,
+      this.itemUpdater,
+      this.airdropSky,
+      this.inGame,
+    ];
   }
 
   // Solidos do mapa, jogador e zumbis em ordem de profundidade: quem tem os pes mais abaixo na tela
@@ -124,8 +142,45 @@ class Main {
 
     this.screen = null;
     Controls.addEventListeners();
+    this.addPauseListeners();
     document.body.style.cursor = 'none';
     this.resetGame();
+  }
+
+  // Esc pausa e despausa; com o jogo pausado, M volta ao menu. Trocar de aba ou de janela tambem pausa.
+  addPauseListeners() {
+    if (this.pause_listeners) return;
+    this.pause_listeners = true;
+
+    document.addEventListener('keydown', (event) => this.onPauseKey(event));
+    window.addEventListener('blur', () => this.setPaused(true));
+  }
+
+  onPauseKey(event) {
+    if (!this.gameRunning || event.repeat) return;
+
+    const key = event.key.toLowerCase();
+    if (key === 'escape') this.setPaused(!this.paused);
+    else if (key === 'm' && this.paused) this.quitToMenu();
+  }
+
+  setPaused(paused) {
+    if (!this.gameRunning || this.paused === paused) return;
+
+    this.paused = paused;
+    if (paused) Clock.pause();
+    else Clock.resume();
+
+    // Teclas e clique seguros no momento do pause nao devem continuar valendo ao voltar.
+    Controls.releaseAll();
+    document.body.style.cursor = paused ? 'auto' : 'none';
+  }
+
+  quitToMenu() {
+    this.setPaused(false);
+    this.gameRunning = false;
+    this.gameOver = false;
+    this.screen = null;
   }
 
   finishGame() {
@@ -134,6 +189,7 @@ class Main {
   }
 
   resetGame() {
+    this.setPaused(false);
     this.gameRunning = true;
     this.gameOver = false;
     this.player.reset();
